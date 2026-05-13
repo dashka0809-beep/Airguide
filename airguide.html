@@ -1,0 +1,1127 @@
+<!DOCTYPE html>
+<html lang="mn">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover" />
+<title>Air Guide — Таны зорилгодоо хүрэх нислэг</title>
+<meta name="description" content="Air Guide — нислэгийн тийз захиалах хамгийн хялбар, найдвартай арга." />
+<style>
+  :root {
+    --primary: #29abe2;
+    --primary-dark: #1690c2;
+    --primary-light: #e3f5fc;
+    --accent: #fdc52e;
+    --accent-dark: #f0b620;
+    --dark: #0f1729;
+    --text: #111827;
+    --text-light: #6b7280;
+    --text-mute: #9ca3af;
+    --bg: #ffffff;
+    --bg-soft: #f5f7fb;
+    --bg-card: #ffffff;
+    --border: #e5e7eb;
+    --border-soft: #f1f3f7;
+    --shadow-sm: 0 1px 3px rgba(15, 23, 41, 0.06);
+    --shadow: 0 4px 16px rgba(15, 23, 41, 0.06);
+    --shadow-lg: 0 12px 40px rgba(15, 23, 41, 0.10);
+    --radius: 12px;
+    --radius-lg: 16px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    color: var(--text);
+    background: var(--bg-soft);
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+  a { color: inherit; text-decoration: none; }
+  img { display: block; max-width: 100%; }
+  button { font-family: inherit; cursor: pointer; }
+
+  .container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+  }
+
+  /* ===== TOP BAR ===== */
+  .topbar {
+    background: var(--dark);
+    color: #c5cbd8;
+    font-size: 13px;
+    padding: 8px 0;
+  }
+  .topbar-inner {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  .topbar-left { display: flex; gap: 20px; flex-wrap: wrap; align-items: center; }
+  .topbar-left a, .topbar-left span { display: inline-flex; align-items: center; gap: 6px; color: #c5cbd8; transition: color .2s; }
+  .topbar-left a:hover { color: white; }
+  .topbar-right { display: flex; gap: 16px; align-items: center; }
+  .topbar-right a { color: #c5cbd8; transition: color .2s; }
+  .topbar-right a:hover { color: var(--accent); }
+
+  /* ===== HEADER / NAV ===== */
+  header.main {
+    background: white;
+    border-bottom: 1px solid var(--border);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 76px;
+  }
+  .logo {
+    display: flex;
+    align-items: center;
+    height: 52px;
+  }
+  .logo svg { height: 100%; width: auto; }
+  .nav-links {
+    display: flex;
+    gap: 32px;
+    list-style: none;
+  }
+  .nav-links a {
+    font-weight: 600;
+    font-size: 15px;
+    color: var(--text);
+    padding: 8px 0;
+    position: relative;
+    transition: color .2s;
+  }
+  .nav-links a:hover { color: var(--primary); }
+  .nav-links a.active::after {
+    content: '';
+    position: absolute;
+    bottom: -28px;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: var(--primary);
+    border-radius: 3px 3px 0 0;
+  }
+  .nav-right { display: flex; align-items: center; gap: 16px; }
+  .lang-switch {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text);
+    transition: all .2s;
+  }
+  .lang-switch:hover { border-color: var(--primary); color: var(--primary); }
+
+  .menu-toggle {
+    display: none;
+    background: none;
+    border: none;
+    font-size: 24px;
+    color: var(--text);
+  }
+
+  /* ===== HERO ===== */
+  .hero {
+    position: relative;
+    background: linear-gradient(135deg, #1690c2 0%, #29abe2 50%, #5dc0e8 100%);
+    color: white;
+    padding: 60px 0 120px;
+    overflow: hidden;
+  }
+  .hero::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image:
+      radial-gradient(circle at 20% 80%, rgba(255,255,255,0.08) 0%, transparent 50%),
+      radial-gradient(circle at 80% 20%, rgba(253,197,46,0.12) 0%, transparent 50%);
+    pointer-events: none;
+  }
+
+  .hero-content {
+    position: relative;
+    text-align: center;
+    margin-bottom: 40px;
+  }
+  .hero h1 {
+    font-size: clamp(28px, 4.5vw, 44px);
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    margin-bottom: 12px;
+  }
+  .hero .subtitle {
+    font-size: 17px;
+    opacity: 0.9;
+  }
+
+  /* ===== SEARCH BOX ===== */
+  .search-wrap {
+    position: relative;
+    z-index: 5;
+  }
+  .search-box {
+    background: white;
+    border-radius: 16px;
+    padding: 20px;
+    box-shadow: 0 24px 60px rgba(15, 23, 41, 0.18);
+  }
+  .trip-tabs {
+    display: flex;
+    gap: 4px;
+    margin-bottom: 16px;
+    background: var(--bg-soft);
+    padding: 4px;
+    border-radius: 10px;
+    width: fit-content;
+  }
+  .trip-tab {
+    background: transparent;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 13px;
+    color: var(--text-light);
+    transition: all .2s;
+  }
+  .trip-tab.active {
+    background: white;
+    color: var(--primary);
+    box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+  }
+  .search-grid {
+    display: grid;
+    grid-template-columns: 1.2fr 1.2fr 1fr 1fr 0.9fr auto;
+    gap: 8px;
+    align-items: end;
+  }
+  .field {
+    background: var(--bg-soft);
+    border-radius: 10px;
+    padding: 10px 14px;
+    transition: all .2s;
+    cursor: text;
+  }
+  .field:hover { background: #eef1f6; }
+  .field-label {
+    display: block;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--text-light);
+    margin-bottom: 4px;
+  }
+  .field input, .field select {
+    width: 100%;
+    border: none;
+    background: transparent;
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--text);
+    outline: none;
+    font-family: inherit;
+  }
+  .field .sub {
+    font-size: 12px;
+    color: var(--text-mute);
+    margin-top: 2px;
+  }
+  .search-btn {
+    background: var(--accent);
+    color: var(--dark);
+    border: none;
+    padding: 0 28px;
+    height: 100%;
+    min-height: 76px;
+    border-radius: 12px;
+    font-weight: 700;
+    font-size: 16px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: all .2s;
+  }
+  .search-btn:hover {
+    background: var(--accent-dark);
+    transform: translateY(-1px);
+    box-shadow: 0 10px 24px rgba(253, 197, 46, 0.4);
+  }
+
+  /* ===== SECTIONS ===== */
+  section { padding: 72px 0; }
+
+  .section-head {
+    display: flex;
+    align-items: end;
+    justify-content: space-between;
+    margin-bottom: 32px;
+    gap: 16px;
+  }
+  .section-head h2 {
+    font-size: clamp(24px, 3vw, 32px);
+    font-weight: 800;
+    letter-spacing: -0.02em;
+  }
+  .section-head .sub {
+    color: var(--text-light);
+    margin-top: 4px;
+    font-size: 15px;
+  }
+  .section-head a.see-all {
+    color: var(--primary);
+    font-weight: 600;
+    font-size: 14px;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  /* ===== DESTINATIONS GRID ===== */
+  .destinations {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 20px;
+  }
+  .dest-card {
+    background: white;
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    box-shadow: var(--shadow-sm);
+    transition: all .3s;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+  }
+  .dest-card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-lg);
+  }
+  .dest-banner {
+    height: 160px;
+    background-size: cover;
+    background-position: center;
+    position: relative;
+  }
+  .dest-banner::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to top, rgba(0,0,0,0.35) 0%, transparent 60%);
+  }
+  .dest-city {
+    position: absolute;
+    bottom: 12px;
+    left: 16px;
+    color: white;
+    font-size: 22px;
+    font-weight: 800;
+    z-index: 2;
+    text-shadow: 0 2px 6px rgba(0,0,0,0.3);
+  }
+  .dest-body {
+    padding: 16px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+  }
+  .dest-freq {
+    font-size: 13px;
+    color: var(--text-light);
+    margin-bottom: 12px;
+  }
+  .dest-airlines {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 14px;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+  .airline-dot {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 11px;
+    font-weight: 800;
+    border: 2px solid white;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  }
+  .dest-action {
+    margin-top: auto;
+    background: var(--bg-soft);
+    color: var(--text);
+    border: none;
+    padding: 10px;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 13px;
+    transition: all .2s;
+  }
+  .dest-card:hover .dest-action {
+    background: var(--primary);
+    color: white;
+  }
+
+  /* ===== APP SECTION ===== */
+  .app-section {
+    background: white;
+  }
+  .app-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 60px;
+    align-items: center;
+  }
+  .app-info .tag {
+    display: inline-block;
+    background: var(--primary-light);
+    color: var(--primary-dark);
+    padding: 4px 12px;
+    border-radius: 100px;
+    font-size: 13px;
+    font-weight: 600;
+    margin-bottom: 16px;
+  }
+  .app-info h2 {
+    font-size: clamp(26px, 3.5vw, 36px);
+    font-weight: 800;
+    margin-bottom: 16px;
+    letter-spacing: -0.02em;
+  }
+  .app-info p {
+    color: var(--text-light);
+    font-size: 16px;
+    margin-bottom: 24px;
+  }
+  .app-badges {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+  .app-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    background: var(--dark);
+    color: white;
+    padding: 10px 18px;
+    border-radius: 10px;
+    transition: all .2s;
+  }
+  .app-badge:hover { transform: translateY(-2px); box-shadow: var(--shadow-lg); }
+  .app-badge .ico { font-size: 28px; }
+  .app-badge .label small { display: block; font-size: 10px; opacity: 0.7; font-weight: 500; }
+  .app-badge .label .name { font-size: 16px; font-weight: 700; }
+
+  .app-mockups {
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 420px;
+  }
+  .phone {
+    width: 200px;
+    height: 380px;
+    background: linear-gradient(135deg, #1a2238, #0f1729);
+    border-radius: 28px;
+    border: 6px solid #1f2937;
+    box-shadow: 0 24px 50px rgba(0,0,0,0.2);
+    position: absolute;
+    overflow: hidden;
+  }
+  .phone-1 { transform: rotate(-8deg) translateX(-100px); z-index: 1; }
+  .phone-2 { transform: scale(1.05); z-index: 3; box-shadow: 0 30px 60px rgba(0,0,0,0.3); }
+  .phone-3 { transform: rotate(8deg) translateX(100px); z-index: 1; }
+  .phone-screen {
+    position: absolute;
+    inset: 6px;
+    border-radius: 22px;
+    background: linear-gradient(160deg, #29abe2, #1690c2);
+    padding: 20px;
+    color: white;
+    overflow: hidden;
+  }
+  .phone-screen .pscr-title { font-size: 11px; font-weight: 700; opacity: 0.8; margin-bottom: 16px; }
+  .phone-screen .pscr-row { background: rgba(255,255,255,0.15); border-radius: 8px; padding: 10px; margin-bottom: 8px; }
+  .phone-screen .pscr-row .a { font-size: 10px; opacity: 0.7; }
+  .phone-screen .pscr-row .b { font-size: 14px; font-weight: 700; }
+  .phone-screen .pscr-row .c { font-size: 9px; opacity: 0.6; }
+  .phone-screen .pscr-btn { background: var(--accent); color: var(--dark); padding: 10px; border-radius: 8px; font-weight: 700; font-size: 12px; text-align: center; margin-top: 12px; }
+
+  /* ===== FAQ ===== */
+  .faq-section {
+    background: var(--bg-soft);
+  }
+  .faq-list {
+    max-width: 800px;
+    margin: 0 auto;
+  }
+  .faq-item {
+    background: white;
+    border-radius: var(--radius);
+    margin-bottom: 12px;
+    overflow: hidden;
+    border: 1px solid var(--border);
+    transition: all .2s;
+  }
+  .faq-item.open { box-shadow: var(--shadow); border-color: var(--primary-light); }
+  .faq-q {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 18px 22px;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 15px;
+    color: var(--text);
+    transition: color .2s;
+  }
+  .faq-q:hover { color: var(--primary); }
+  .faq-q .arrow {
+    width: 24px;
+    height: 24px;
+    background: var(--bg-soft);
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--primary);
+    font-size: 14px;
+    transition: transform .2s;
+    flex-shrink: 0;
+    margin-left: 12px;
+  }
+  .faq-item.open .arrow { transform: rotate(180deg); background: var(--primary); color: white; }
+  .faq-a {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height .3s;
+    padding: 0 22px;
+    color: var(--text-light);
+    font-size: 14px;
+  }
+  .faq-item.open .faq-a {
+    max-height: 300px;
+    padding: 0 22px 18px;
+  }
+
+  /* ===== FEATURES ===== */
+  .features-section { background: white; }
+  .features-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 24px;
+  }
+  .feature {
+    text-align: center;
+    padding: 24px 16px;
+  }
+  .feature .fico {
+    width: 60px;
+    height: 60px;
+    background: var(--primary-light);
+    color: var(--primary);
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 26px;
+    margin-bottom: 16px;
+  }
+  .feature h4 {
+    font-size: 16px;
+    font-weight: 700;
+    margin-bottom: 6px;
+  }
+  .feature p {
+    font-size: 13px;
+    color: var(--text-light);
+  }
+
+  /* ===== FOOTER ===== */
+  footer {
+    background: var(--dark);
+    color: #c5cbd8;
+    padding: 60px 0 20px;
+  }
+  .footer-grid {
+    display: grid;
+    grid-template-columns: 1.5fr 1fr 1fr 1.2fr;
+    gap: 40px;
+    margin-bottom: 40px;
+  }
+  .footer-brand p {
+    font-size: 14px;
+    line-height: 1.7;
+    margin: 16px 0;
+    max-width: 320px;
+  }
+  .social {
+    display: flex;
+    gap: 10px;
+  }
+  .social a {
+    width: 36px;
+    height: 36px;
+    background: rgba(255,255,255,0.08);
+    border-radius: 8px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: all .2s;
+  }
+  .social a:hover { background: var(--primary); color: white; }
+  .footer-col h4 {
+    color: white;
+    font-size: 15px;
+    font-weight: 700;
+    margin-bottom: 16px;
+  }
+  .footer-col ul { list-style: none; display: flex; flex-direction: column; gap: 10px; }
+  .footer-col a { font-size: 14px; transition: color .2s; }
+  .footer-col a:hover { color: var(--accent); }
+  .footer-contact li { display: flex; gap: 10px; align-items: flex-start; font-size: 14px; margin-bottom: 12px; }
+  .footer-contact .ic { color: var(--primary); flex-shrink: 0; }
+  .footer-bottom {
+    border-top: 1px solid rgba(255,255,255,0.1);
+    padding-top: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 13px;
+    color: #8892a8;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  .footer-bottom-links { display: flex; gap: 20px; }
+  .footer-bottom-links a:hover { color: white; }
+
+  /* ===== RESPONSIVE ===== */
+  @media (max-width: 1024px) {
+    .destinations { grid-template-columns: repeat(3, 1fr); }
+    .features-grid { grid-template-columns: repeat(2, 1fr); }
+    .search-grid { grid-template-columns: 1fr 1fr; }
+    .search-btn { grid-column: span 2; min-height: 56px; }
+  }
+  @media (max-width: 768px) {
+    .topbar-left .addr { display: none; }
+    .nav-links { display: none; }
+    .menu-toggle { display: block; }
+    .destinations { grid-template-columns: repeat(2, 1fr); }
+    .app-grid { grid-template-columns: 1fr; }
+    .app-mockups { min-height: 360px; transform: scale(0.85); }
+    .footer-grid { grid-template-columns: 1fr 1fr; }
+    .features-grid { grid-template-columns: 1fr 1fr; }
+    section { padding: 56px 0; }
+  }
+  @media (max-width: 480px) {
+    .destinations { grid-template-columns: 1fr; }
+    .footer-grid { grid-template-columns: 1fr; }
+    .features-grid { grid-template-columns: 1fr; }
+    .search-grid { grid-template-columns: 1fr; }
+    .search-btn { grid-column: 1; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ===== TOP BAR ===== -->
+<div class="topbar">
+  <div class="container topbar-inner">
+    <div class="topbar-left">
+      <a href="tel:+97677001234">📞 +976 7700-1234</a>
+      <a href="tel:+97699115678">📞 +976 9911-5678</a>
+      <a href="mailto:info@airguide.mn">✉️ info@airguide.mn</a>
+      <span class="addr">📍 Сүхбаатар дүүрэг, Air Guide Tower</span>
+    </div>
+    <div class="topbar-right">
+      <a href="#" aria-label="Facebook">📘 Facebook</a>
+      <a href="#" aria-label="Instagram">📷 Instagram</a>
+    </div>
+  </div>
+</div>
+
+<!-- ===== HEADER ===== -->
+<header class="main">
+  <div class="container nav">
+    <a href="#" class="logo" aria-label="Air Guide">
+      <svg viewBox="0 0 260 180" xmlns="http://www.w3.org/2000/svg">
+        <g>
+          <ellipse cx="60" cy="80" rx="55" ry="48" fill="#29abe2"/>
+          <ellipse cx="130" cy="60" rx="80" ry="52" fill="#29abe2"/>
+          <ellipse cx="200" cy="80" rx="55" ry="48" fill="#29abe2"/>
+          <ellipse cx="90" cy="120" rx="70" ry="40" fill="#29abe2"/>
+          <ellipse cx="170" cy="120" rx="70" ry="40" fill="#29abe2"/>
+        </g>
+        <g transform="translate(195 35) rotate(-25)" fill="#fdc52e">
+          <ellipse cx="0" cy="0" rx="26" ry="5"/>
+          <path d="M -16 -2 L -22 -16 L -10 -3 Z"/>
+          <path d="M 6 -3 Q 0 -18 -8 -3 Z"/>
+          <path d="M 6 3 Q 0 18 -8 3 Z"/>
+          <path d="M -22 -2 L -30 -6 L -26 0 L -30 6 L -22 2 Z"/>
+        </g>
+        <text x="40" y="78" font-family="'Trebuchet MS', Arial, sans-serif" font-weight="900" font-size="52" fill="#ffffff" letter-spacing="-2">air</text>
+        <text x="40" y="135" font-family="'Trebuchet MS', Arial, sans-serif" font-weight="900" font-size="58" fill="#ffffff" letter-spacing="-2">guide</text>
+        <text x="60" y="170" font-family="'Trebuchet MS', Arial, sans-serif" font-weight="600" font-size="14" fill="#29abe2" letter-spacing="3">ticketing agency</text>
+      </svg>
+    </a>
+    <ul class="nav-links">
+      <li><a href="#" class="active">Нислэг хайх</a></li>
+      <li><a href="#app">Air Guide апп</a></li>
+      <li><a href="#schedule">Нислэгийн хуваарь</a></li>
+      <li><a href="#about">Бидний тухай</a></li>
+      <li><a href="#contact">Холбоо барих</a></li>
+    </ul>
+    <div class="nav-right">
+      <a href="#" class="lang-switch">🌐 MN / EN</a>
+      <button class="menu-toggle" aria-label="Цэс">☰</button>
+    </div>
+  </div>
+</header>
+
+<!-- ===== HERO ===== -->
+<section class="hero">
+  <div class="container">
+    <div class="hero-content">
+      <h1>Таны зорилгодоо хүрэх нислэг</h1>
+      <p class="subtitle">Дэлхийн 500+ хотод хямд, найдвартай тийз захиалах</p>
+    </div>
+    <div class="search-wrap">
+      <div class="search-box">
+        <div class="trip-tabs">
+          <button class="trip-tab active" onclick="setTrip(this, 'round')">Очиж буцах</button>
+          <button class="trip-tab" onclick="setTrip(this, 'oneway')">Нэг талын</button>
+          <button class="trip-tab" onclick="setTrip(this, 'multi')">Олон чиглэл</button>
+        </div>
+        <div class="search-grid">
+          <div class="field">
+            <span class="field-label">Хаанаас</span>
+            <input type="text" value="Ulaanbaatar" />
+            <div class="sub">UBN · Чингис Хаан</div>
+          </div>
+          <div class="field">
+            <span class="field-label">Хаашаа</span>
+            <input type="text" value="Seoul" />
+            <div class="sub">ICN · Инчоны буудал</div>
+          </div>
+          <div class="field">
+            <span class="field-label">Явах</span>
+            <input type="date" value="2026-05-14" />
+            <div class="sub">Пүрэв гараг</div>
+          </div>
+          <div class="field">
+            <span class="field-label">Буцах</span>
+            <input type="date" value="2026-05-16" />
+            <div class="sub">Бямба гараг</div>
+          </div>
+          <div class="field">
+            <span class="field-label">Зорчигч</span>
+            <select>
+              <option>1 насанд хүрэгч</option>
+              <option>2 насанд хүрэгч</option>
+              <option>3 насанд хүрэгч</option>
+              <option>1 + 1 хүүхэд</option>
+            </select>
+            <div class="sub">Энгийн зэрэглэл</div>
+          </div>
+          <button class="search-btn">🔍 Хайх</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== POPULAR DESTINATIONS ===== -->
+<section style="padding-top: 56px;">
+  <div class="container">
+    <div class="section-head">
+      <div>
+        <h2>Алдартай чиглэлүүд</h2>
+        <div class="sub">UB-аас шууд нислэгтэй хотууд</div>
+      </div>
+      <a href="#" class="see-all">Бүгдийг үзэх →</a>
+    </div>
+    <div class="destinations">
+      <div class="dest-card">
+        <div class="dest-banner" style="background: linear-gradient(135deg, #4f46e5, #ec4899);">
+          <span class="dest-city">Seoul</span>
+        </div>
+        <div class="dest-body">
+          <div class="dest-freq">Өдөр бүр шууд нислэгтэй</div>
+          <div class="dest-airlines">
+            <span class="airline-dot" style="background:#1eaee5">M</span>
+            <span class="airline-dot" style="background:#ff6b6b">K</span>
+            <span class="airline-dot" style="background:#7c3aed">A</span>
+            <span style="font-size:12px;color:var(--text-mute);margin-left:4px;">+3</span>
+          </div>
+          <button class="dest-action">Өдөр сонгох</button>
+        </div>
+      </div>
+
+      <div class="dest-card">
+        <div class="dest-banner" style="background: linear-gradient(135deg, #dc2626, #f59e0b);">
+          <span class="dest-city">Beijing</span>
+        </div>
+        <div class="dest-body">
+          <div class="dest-freq">Өдөр бүр шууд нислэгтэй</div>
+          <div class="dest-airlines">
+            <span class="airline-dot" style="background:#1eaee5">M</span>
+            <span class="airline-dot" style="background:#dc2626">C</span>
+          </div>
+          <button class="dest-action">Өдөр сонгох</button>
+        </div>
+      </div>
+
+      <div class="dest-card">
+        <div class="dest-banner" style="background: linear-gradient(135deg, #0891b2, #06b6d4);">
+          <span class="dest-city">Tokyo</span>
+        </div>
+        <div class="dest-body">
+          <div class="dest-freq">Өдөр бүр шууд нислэгтэй</div>
+          <div class="dest-airlines">
+            <span class="airline-dot" style="background:#1eaee5">M</span>
+            <span class="airline-dot" style="background:#dc2626">J</span>
+            <span class="airline-dot" style="background:#f43f5e">N</span>
+          </div>
+          <button class="dest-action">Өдөр сонгох</button>
+        </div>
+      </div>
+
+      <div class="dest-card">
+        <div class="dest-banner" style="background: linear-gradient(135deg, #be123c, #f97316);">
+          <span class="dest-city">Istanbul</span>
+        </div>
+        <div class="dest-body">
+          <div class="dest-freq">❷❹❻❼ өдрүүдэд</div>
+          <div class="dest-airlines">
+            <span class="airline-dot" style="background:#dc2626">T</span>
+            <span class="airline-dot" style="background:#1eaee5">M</span>
+          </div>
+          <button class="dest-action">Өдөр сонгох</button>
+        </div>
+      </div>
+
+      <div class="dest-card">
+        <div class="dest-banner" style="background: linear-gradient(135deg, #059669, #10b981);">
+          <span class="dest-city">Busan</span>
+        </div>
+        <div class="dest-body">
+          <div class="dest-freq">❶❷❹❺❻❼ өдрүүдэд</div>
+          <div class="dest-airlines">
+            <span class="airline-dot" style="background:#ff6b6b">K</span>
+            <span class="airline-dot" style="background:#1eaee5">M</span>
+          </div>
+          <button class="dest-action">Өдөр сонгох</button>
+        </div>
+      </div>
+
+      <div class="dest-card">
+        <div class="dest-banner" style="background: linear-gradient(135deg, #0ea5e9, #6366f1);">
+          <span class="dest-city">Astana</span>
+        </div>
+        <div class="dest-body">
+          <div class="dest-freq">❸❻ өдрүүдэд шууд</div>
+          <div class="dest-airlines">
+            <span class="airline-dot" style="background:#0ea5e9">S</span>
+          </div>
+          <button class="dest-action">Өдөр сонгох</button>
+        </div>
+      </div>
+
+      <div class="dest-card">
+        <div class="dest-banner" style="background: linear-gradient(135deg, #ea580c, #fbbf24);">
+          <span class="dest-city">Hohhot</span>
+        </div>
+        <div class="dest-body">
+          <div class="dest-freq">Өдөр бүр шууд нислэгтэй</div>
+          <div class="dest-airlines">
+            <span class="airline-dot" style="background:#dc2626">C</span>
+            <span class="airline-dot" style="background:#1eaee5">M</span>
+          </div>
+          <button class="dest-action">Өдөр сонгох</button>
+        </div>
+      </div>
+
+      <div class="dest-card">
+        <div class="dest-banner" style="background: linear-gradient(135deg, #1e3a8a, #3b82f6);">
+          <span class="dest-city">Frankfurt</span>
+        </div>
+        <div class="dest-body">
+          <div class="dest-freq">Өдөр бүр шууд нислэгтэй</div>
+          <div class="dest-airlines">
+            <span class="airline-dot" style="background:#1eaee5">M</span>
+          </div>
+          <button class="dest-action">Өдөр сонгох</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== FEATURES ===== -->
+<section class="features-section">
+  <div class="container">
+    <div class="features-grid">
+      <div class="feature">
+        <div class="fico">💰</div>
+        <h4>Хамгийн хямд үнэ</h4>
+        <p>500+ агаарын компани харьцуулж хамгийн хямд үнийг олно</p>
+      </div>
+      <div class="feature">
+        <div class="fico">⚡</div>
+        <h4>Хурдан захиалга</h4>
+        <p>30 секундэд тийз захиалж, имэйл рүү шууд илгээнэ</p>
+      </div>
+      <div class="feature">
+        <div class="fico">🔒</div>
+        <h4>Найдвартай төлбөр</h4>
+        <p>Карт, QPay, дансаар төлөх найдвартай систем</p>
+      </div>
+      <div class="feature">
+        <div class="fico">📞</div>
+        <h4>24/7 тусламж</h4>
+        <p>Өдөр шөнөгүй ажилладаг мэргэжлийн баг</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== APP SECTION ===== -->
+<section class="app-section" id="app">
+  <div class="container">
+    <div class="app-grid">
+      <div class="app-info">
+        <span class="tag">Air Guide апп</span>
+        <h2>Нислэгийн тийз захиалгын аппликейшн</h2>
+        <p>Хаана ч, хэзээ ч нислэгийн тийзээ захиалаарай. Утсаараа боарддинг пасс үзэх, нислэгийн шинэчлэлт авах боломжтой.</p>
+        <div class="app-badges">
+          <a href="#" class="app-badge">
+            <span class="ico"></span>
+            <span class="label">
+              <small>Download on the</small>
+              <span class="name">App Store</span>
+            </span>
+          </a>
+          <a href="#" class="app-badge">
+            <span class="ico">▶</span>
+            <span class="label">
+              <small>GET IT ON</small>
+              <span class="name">Google Play</span>
+            </span>
+          </a>
+        </div>
+      </div>
+      <div class="app-mockups">
+        <div class="phone phone-1">
+          <div class="phone-screen">
+            <div class="pscr-title">НИСЛЭГ ХАЙХ</div>
+            <div class="pscr-row"><div class="a">From</div><div class="b">UBN → ICN</div></div>
+            <div class="pscr-row"><div class="a">Date</div><div class="b">May 14, 2026</div></div>
+            <div class="pscr-btn">Хайх</div>
+          </div>
+        </div>
+        <div class="phone phone-2">
+          <div class="phone-screen">
+            <div class="pscr-title">НИСЛЭГИЙН ҮР ДҮН</div>
+            <div class="pscr-row">
+              <div class="a">Aero Mongolia</div>
+              <div class="b">12:30 → 16:35</div>
+              <div class="c">3ц 05м · UBN-ICN</div>
+            </div>
+            <div class="pscr-row">
+              <div class="a">Korean Air</div>
+              <div class="b">11:00 → 15:30</div>
+              <div class="c">3ц 30м · UBN-ICN</div>
+            </div>
+            <div class="pscr-btn">Захиалах</div>
+          </div>
+        </div>
+        <div class="phone phone-3">
+          <div class="phone-screen">
+            <div class="pscr-title">ТИЙЗИЙН ДЭЛГЭРЭНГҮЙ</div>
+            <div class="pscr-row">
+              <div class="a">Passenger</div>
+              <div class="b">Энхтөр Д.</div>
+            </div>
+            <div class="pscr-row">
+              <div class="a">Total</div>
+              <div class="b">1,372,100₮</div>
+            </div>
+            <div class="pscr-btn">Төлбөр төлөх</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== FAQ ===== -->
+<section class="faq-section">
+  <div class="container">
+    <div class="section-head" style="justify-content: center; text-align: center; flex-direction: column; gap: 8px;">
+      <h2>Түгээмэл асуултууд</h2>
+      <div class="sub">Хамгийн их асуудаг асуултын хариулт</div>
+    </div>
+    <div class="faq-list">
+      <div class="faq-item">
+        <div class="faq-q" onclick="toggleFaq(this)">Нислэгийн тийз хэрхэн захиалах вэ?<span class="arrow">▼</span></div>
+        <div class="faq-a"><p style="padding-top:6px;">Та манай сайтын дээд талд байрлах хайлтын талбараас хаанаас-хаашаа явахаа, явах, буцах огноогоо сонгоод "Хайх" товчийг дарна уу. Гарч ирсэн нислэгүүдээс өөрт тохирох нислэгээ сонгож, зорчигчийн мэдээллээ оруулан, төлбөрөө төлснөөр захиалга баталгаажна.</p></div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q" onclick="toggleFaq(this)">Төлбөрийг яаж хийх вэ?<span class="arrow">▼</span></div>
+        <div class="faq-a"><p style="padding-top:6px;">Картаар (Visa, Mastercard), QPay, SocialPay, эсвэл банкны шилжүүлгээр төлбөр төлөх боломжтой. Төлбөр хийсний дараа e-ticket таны имэйл рүү автоматаар илгээгдэнэ.</p></div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q" onclick="toggleFaq(this)">Тийз авсаны дараа огноо өөрчлөх боломжтой юу?<span class="arrow">▼</span></div>
+        <div class="faq-a"><p style="padding-top:6px;">Тийзийн төрлөөс хамаарна. Энгийн (Economy) тийз нь шимтгэлтэйгээр огноо өөрчлөх боломжтой. Flex тийз нь үнэгүй өөрчлөх боломжтой. Дэлгэрэнгүй мэдээллийг тийз худалдаж авахын өмнө шалгаарай.</p></div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q" onclick="toggleFaq(this)">Хүүхдийн тийзийг хэрхэн захиалах вэ?<span class="arrow">▼</span></div>
+        <div class="faq-a"><p style="padding-top:6px;">Хайлтын үед зорчигчийн тоонд "Хүүхэд" эсвэл "Нярай" гэж сонгож нэмнэ. 2-12 насны хүүхдэд хүүхдийн хямдрал, 0-2 насны нярайд тусгай үнэ үйлчилнэ. Хүүхэд насанд хүрэгч хүний хамт зорчих ёстой.</p></div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q" onclick="toggleFaq(this)">НӨАТ-ын баримт өгдөг үү?<span class="arrow">▼</span></div>
+        <div class="faq-a"><p style="padding-top:6px;">Тийм. Захиалга баталгаажсаны дараа e-баримтыг таны имэйл рүү автоматаар илгээх бөгөөд НӨАТ.МН системд бүртгэгдэх болно. Байгууллагын баримт авах бол захиалгын үед регистрийн дугаараа оруулна уу.</p></div>
+      </div>
+    </div>
+    <div style="text-align:center; margin-top: 24px;">
+      <a href="#" style="color: var(--primary); font-weight: 600;">Бүх асуулт үзэх →</a>
+    </div>
+  </div>
+</section>
+
+<!-- ===== FOOTER ===== -->
+<footer>
+  <div class="container">
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <div class="logo" style="height: 60px;">
+          <svg viewBox="0 0 260 180" xmlns="http://www.w3.org/2000/svg">
+            <g>
+              <ellipse cx="60" cy="80" rx="55" ry="48" fill="#29abe2"/>
+              <ellipse cx="130" cy="60" rx="80" ry="52" fill="#29abe2"/>
+              <ellipse cx="200" cy="80" rx="55" ry="48" fill="#29abe2"/>
+              <ellipse cx="90" cy="120" rx="70" ry="40" fill="#29abe2"/>
+              <ellipse cx="170" cy="120" rx="70" ry="40" fill="#29abe2"/>
+            </g>
+            <g transform="translate(195 35) rotate(-25)" fill="#fdc52e">
+              <ellipse cx="0" cy="0" rx="26" ry="5"/>
+              <path d="M -16 -2 L -22 -16 L -10 -3 Z"/>
+              <path d="M 6 -3 Q 0 -18 -8 -3 Z"/>
+              <path d="M 6 3 Q 0 18 -8 3 Z"/>
+              <path d="M -22 -2 L -30 -6 L -26 0 L -30 6 L -22 2 Z"/>
+            </g>
+            <text x="40" y="78" font-family="Arial, sans-serif" font-weight="900" font-size="52" fill="#ffffff" letter-spacing="-2">air</text>
+            <text x="40" y="135" font-family="Arial, sans-serif" font-weight="900" font-size="58" fill="#ffffff" letter-spacing="-2">guide</text>
+            <text x="60" y="170" font-family="Arial, sans-serif" font-weight="600" font-size="14" fill="#7bcfee" letter-spacing="3">ticketing agency</text>
+          </svg>
+        </div>
+        <p>Танай зорилгодоо хүрэх найдвартай нислэгийн хамтрагч. Дэлхийн өнцөг булан бүрт хямд тийз.</p>
+        <div class="social">
+          <a href="#" aria-label="Facebook">f</a>
+          <a href="#" aria-label="Instagram">📷</a>
+          <a href="#" aria-label="Twitter">𝕏</a>
+          <a href="#" aria-label="YouTube">▶</a>
+        </div>
+      </div>
+
+      <div class="footer-col">
+        <h4>Үйлчилгээ</h4>
+        <ul>
+          <li><a href="#">Нислэг хайх</a></li>
+          <li><a href="#">Air Guide апп</a></li>
+          <li><a href="#">Нислэгийн хуваарь</a></li>
+          <li><a href="#">Виз бүрдүүлэлт</a></li>
+          <li><a href="#">Аялалын даатгал</a></li>
+        </ul>
+      </div>
+
+      <div class="footer-col">
+        <h4>Тусламж</h4>
+        <ul>
+          <li><a href="#">Бидний тухай</a></li>
+          <li><a href="#">Холбоо барих</a></li>
+          <li><a href="#">Түгээмэл асуултууд</a></li>
+          <li><a href="#">Нууцлалын бодлого</a></li>
+          <li><a href="#">Үйлчилгээний нөхцөл</a></li>
+        </ul>
+      </div>
+
+      <div class="footer-col">
+        <h4>Холбоо барих</h4>
+        <ul class="footer-contact">
+          <li><span class="ic">📞</span><span>+976 7700-1234<br>+976 9911-5678</span></li>
+          <li><span class="ic">✉️</span><span>info@airguide.mn</span></li>
+          <li><span class="ic">📍</span><span>Сүхбаатар дүүрэг, 1-р хороо, Чингэлтэй өргөн чөлөө 12, Air Guide Tower</span></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="footer-bottom">
+      <div>© 2026 Air Guide ХХК. Бүх эрх хуулиар хамгаалагдсан.</div>
+      <div class="footer-bottom-links">
+        <a href="#">Нууцлал</a>
+        <a href="#">Нөхцөл</a>
+        <a href="#">Cookie</a>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<script>
+  // FAQ toggle
+  function toggleFaq(el) {
+    const item = el.parentElement;
+    item.classList.toggle('open');
+  }
+
+  // Trip type tabs
+  function setTrip(btn, type) {
+    document.querySelectorAll('.trip-tab').forEach(t => t.classList.remove('active'));
+    btn.classList.add('active');
+  }
+
+  // Mobile menu
+  document.querySelector('.menu-toggle').addEventListener('click', function() {
+    const links = document.querySelector('.nav-links');
+    const visible = links.style.display === 'flex';
+    if (visible) {
+      links.style.display = 'none';
+    } else {
+      links.style.display = 'flex';
+      links.style.position = 'absolute';
+      links.style.top = '76px';
+      links.style.left = '0';
+      links.style.right = '0';
+      links.style.flexDirection = 'column';
+      links.style.background = 'white';
+      links.style.padding = '16px 20px';
+      links.style.borderBottom = '1px solid var(--border)';
+      links.style.gap = '12px';
+      links.style.boxShadow = 'var(--shadow)';
+    }
+  });
+</script>
+
+</body>
+</html>
