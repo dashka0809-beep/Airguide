@@ -381,93 +381,6 @@
     color: white;
   }
 
-  /* ===== APP SECTION ===== */
-  .app-section {
-    background: white;
-  }
-  .app-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 60px;
-    align-items: center;
-  }
-  .app-info .tag {
-    display: inline-block;
-    background: var(--primary-light);
-    color: var(--primary-dark);
-    padding: 4px 12px;
-    border-radius: 100px;
-    font-size: 13px;
-    font-weight: 600;
-    margin-bottom: 16px;
-  }
-  .app-info h2 {
-    font-size: clamp(26px, 3.5vw, 36px);
-    font-weight: 800;
-    margin-bottom: 16px;
-    letter-spacing: -0.02em;
-  }
-  .app-info p {
-    color: var(--text-light);
-    font-size: 16px;
-    margin-bottom: 24px;
-  }
-  .app-badges {
-    display: flex;
-    gap: 12px;
-    flex-wrap: wrap;
-  }
-  .app-badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 10px;
-    background: var(--dark);
-    color: white;
-    padding: 10px 18px;
-    border-radius: 10px;
-    transition: all .2s;
-  }
-  .app-badge:hover { transform: translateY(-2px); box-shadow: var(--shadow-lg); }
-  .app-badge .ico { font-size: 28px; }
-  .app-badge .label small { display: block; font-size: 10px; opacity: 0.7; font-weight: 500; }
-  .app-badge .label .name { font-size: 16px; font-weight: 700; }
-
-  .app-mockups {
-    position: relative;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    min-height: 420px;
-  }
-  .phone {
-    width: 200px;
-    height: 380px;
-    background: linear-gradient(135deg, #1a2238, #0f1729);
-    border-radius: 28px;
-    border: 6px solid #1f2937;
-    box-shadow: 0 24px 50px rgba(0,0,0,0.2);
-    position: absolute;
-    overflow: hidden;
-  }
-  .phone-1 { transform: rotate(-8deg) translateX(-100px); z-index: 1; }
-  .phone-2 { transform: scale(1.05); z-index: 3; box-shadow: 0 30px 60px rgba(0,0,0,0.3); }
-  .phone-3 { transform: rotate(8deg) translateX(100px); z-index: 1; }
-  .phone-screen {
-    position: absolute;
-    inset: 6px;
-    border-radius: 22px;
-    background: linear-gradient(160deg, #29abe2, #1690c2);
-    padding: 20px;
-    color: white;
-    overflow: hidden;
-  }
-  .phone-screen .pscr-title { font-size: 11px; font-weight: 700; opacity: 0.8; margin-bottom: 16px; }
-  .phone-screen .pscr-row { background: rgba(255,255,255,0.15); border-radius: 8px; padding: 10px; margin-bottom: 8px; }
-  .phone-screen .pscr-row .a { font-size: 10px; opacity: 0.7; }
-  .phone-screen .pscr-row .b { font-size: 14px; font-weight: 700; }
-  .phone-screen .pscr-row .c { font-size: 9px; opacity: 0.6; }
-  .phone-screen .pscr-btn { background: var(--accent); color: var(--dark); padding: 10px; border-radius: 8px; font-weight: 700; font-size: 12px; text-align: center; margin-top: 12px; }
-
   /* ===== FAQ ===== */
   .faq-section {
     background: var(--bg-soft);
@@ -628,8 +541,6 @@
     .nav-links { display: none; }
     .menu-toggle { display: block; }
     .destinations { grid-template-columns: repeat(2, 1fr); }
-    .app-grid { grid-template-columns: 1fr; }
-    .app-mockups { min-height: 360px; transform: scale(0.85); }
     .footer-grid { grid-template-columns: 1fr 1fr; }
     .features-grid { grid-template-columns: 1fr 1fr; }
     section { padding: 56px 0; }
@@ -687,7 +598,6 @@
     </a>
     <ul class="nav-links">
       <li><a href="#" class="active">Нислэг хайх</a></li>
-      <li><a href="#app">Air Guide апп</a></li>
       <li><a href="#schedule">Нислэгийн хуваарь</a></li>
       <li><a href="#about">Бидний тухай</a></li>
       <li><a href="#contact">Холбоо барих</a></li>
@@ -906,75 +816,6 @@
   </div>
 </section>
 
-<!-- ===== APP SECTION ===== -->
-<section class="app-section" id="app">
-  <div class="container">
-    <div class="app-grid">
-      <div class="app-info">
-        <span class="tag">Air Guide апп</span>
-        <h2>Нислэгийн тийз захиалгын аппликейшн</h2>
-        <p>Хаана ч, хэзээ ч нислэгийн тийзээ захиалаарай. Утсаараа боарддинг пасс үзэх, нислэгийн шинэчлэлт авах боломжтой.</p>
-        <div class="app-badges">
-          <a href="#" class="app-badge">
-            <span class="ico"></span>
-            <span class="label">
-              <small>Download on the</small>
-              <span class="name">App Store</span>
-            </span>
-          </a>
-          <a href="#" class="app-badge">
-            <span class="ico">▶</span>
-            <span class="label">
-              <small>GET IT ON</small>
-              <span class="name">Google Play</span>
-            </span>
-          </a>
-        </div>
-      </div>
-      <div class="app-mockups">
-        <div class="phone phone-1">
-          <div class="phone-screen">
-            <div class="pscr-title">НИСЛЭГ ХАЙХ</div>
-            <div class="pscr-row"><div class="a">From</div><div class="b">UBN → ICN</div></div>
-            <div class="pscr-row"><div class="a">Date</div><div class="b">May 14, 2026</div></div>
-            <div class="pscr-btn">Хайх</div>
-          </div>
-        </div>
-        <div class="phone phone-2">
-          <div class="phone-screen">
-            <div class="pscr-title">НИСЛЭГИЙН ҮР ДҮН</div>
-            <div class="pscr-row">
-              <div class="a">Aero Mongolia</div>
-              <div class="b">12:30 → 16:35</div>
-              <div class="c">3ц 05м · UBN-ICN</div>
-            </div>
-            <div class="pscr-row">
-              <div class="a">Korean Air</div>
-              <div class="b">11:00 → 15:30</div>
-              <div class="c">3ц 30м · UBN-ICN</div>
-            </div>
-            <div class="pscr-btn">Захиалах</div>
-          </div>
-        </div>
-        <div class="phone phone-3">
-          <div class="phone-screen">
-            <div class="pscr-title">ТИЙЗИЙН ДЭЛГЭРЭНГҮЙ</div>
-            <div class="pscr-row">
-              <div class="a">Passenger</div>
-              <div class="b">Энхтөр Д.</div>
-            </div>
-            <div class="pscr-row">
-              <div class="a">Total</div>
-              <div class="b">1,372,100₮</div>
-            </div>
-            <div class="pscr-btn">Төлбөр төлөх</div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
-
 <!-- ===== FAQ ===== -->
 <section class="faq-section">
   <div class="container">
@@ -1049,7 +890,6 @@
         <h4>Үйлчилгээ</h4>
         <ul>
           <li><a href="#">Нислэг хайх</a></li>
-          <li><a href="#">Air Guide апп</a></li>
           <li><a href="#">Нислэгийн хуваарь</a></li>
           <li><a href="#">Виз бүрдүүлэлт</a></li>
           <li><a href="#">Аялалын даатгал</a></li>
