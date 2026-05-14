@@ -2,12 +2,16 @@
  * server.js — Минималист Node.js static file server
  *
  * Railway-ийн $PORT env-г уншиж static файлуудыг буцаана.
- * Bundle/package-аас хамаарал байхгүй (Node 20 native).
+ * Node 20 native (хамаарал байхгүй).
  *
  * Хэрэглэх:
  *   node server.js
  *   PORT=8080 node server.js
  */
+
+// Эртхэн lifecycle лог (stdout-р буфферээс зайлсхийнэ)
+process.stdout.write(`[boot] server.js loaded, node=${process.version}, pid=${process.pid}\n`);
+process.stdout.write(`[boot] env.PORT=${process.env.PORT}, cwd=${process.cwd()}\n`);
 
 import { createServer } from 'node:http';
 import { readFile } from 'node:fs/promises';
@@ -18,6 +22,18 @@ import { dirname } from 'node:path';
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const PORT = Number(process.env.PORT) || 3000;
 const HOST = '0.0.0.0';
+
+process.stdout.write(`[boot] __dirname=${__dirname}, PORT=${PORT}, HOST=${HOST}\n`);
+
+// Crash-уудыг log хийгээд exit
+process.on('uncaughtException', (err) => {
+  process.stderr.write(`[fatal] uncaughtException: ${err.stack || err}\n`);
+  process.exit(1);
+});
+process.on('unhandledRejection', (err) => {
+  process.stderr.write(`[fatal] unhandledRejection: ${err?.stack || err}\n`);
+  process.exit(1);
+});
 
 const MIME = {
   '.html': 'text/html; charset=utf-8',
@@ -42,7 +58,7 @@ function safePath(reqUrl) {
   return normalized === '/' ? '/index.html' : normalized;
 }
 
-createServer(async (req, res) => {
+const server = createServer(async (req, res) => {
   const path = safePath(req.url || '/');
   const filePath = join(__dirname, path);
 
@@ -59,11 +75,18 @@ createServer(async (req, res) => {
       res.writeHead(404, { 'Content-Type': 'text/plain; charset=utf-8' });
       res.end(`Not found: ${path}`);
     } else {
-      console.error('Server error:', err);
+      process.stderr.write(`[req error] ${err.stack || err}\n`);
       res.writeHead(500, { 'Content-Type': 'text/plain; charset=utf-8' });
       res.end('Internal server error');
     }
   }
-}).listen(PORT, HOST, () => {
-  console.log(`Frontend server listening on http://${HOST}:${PORT}`);
+});
+
+server.on('error', (err) => {
+  process.stderr.write(`[server error] ${err.stack || err}\n`);
+  process.exit(1);
+});
+
+server.listen(PORT, HOST, () => {
+  process.stdout.write(`[ready] Frontend server listening on http://${HOST}:${PORT}\n`);
 });
