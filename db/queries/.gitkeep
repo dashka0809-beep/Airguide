@@ -1,0 +1,7 @@
+# Analytical query, reporting SQL энд хадгалагдана.
+#
+# Жишээ файлууд (Phase 4-д нэмэгдэнэ):
+#   monthly_revenue.sql     — Сар бүрийн орлого
+#   route_popularity.sql    — Хамгийн их зорчилттой чиглэлүүд
+#   customer_segments.sql   — Үйлчлүүлэгчийн ангилал
+#   slow_queries.sql        — pg_stat_statements top 10

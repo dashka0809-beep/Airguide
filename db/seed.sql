@@ -1,0 +1,21 @@
+-- ============================================================
+-- seed.sql — Dev / staging environment-д ачаалах sample data
+--
+-- ⚠️  PLACEHOLDER (Phase 0)
+-- Phase 1-д schema.sql дууссаны дараа бичигдэнэ.
+--
+-- Ачаалах:
+--   psql -U postgres -d airguide_db -f db/seed.sql
+-- ============================================================
+-- TODO (Phase 1):
+-- ============================================================
+-- [ ] airlines       — MIAT, Korean Air, Aero Mongolia, Hunnu Air, ... (~10)
+-- [ ] airports       — ULN, ICN, PEK, NRT, HKT, FRA, IST, AST, ... (~30)
+-- [ ] users          — admin / manager / agent (bcrypt-hashed password)
+-- [ ] flights        — эхний 1 долоо хоногийн схема (~50)
+-- [ ] aircraft       — Boeing 737-800, Airbus A320, ... (~5)
+-- [ ] (option) sample customers (~10) + bookings + tickets — туршилтад
+--
+-- Production-д энэ файлыг ачаалахгүй — зөвхөн airlines, airports л
+-- production-д хэрэгтэй (тэдгээрийг тусдаа prod-seed.sql болгож болно).
+-- ============================================================

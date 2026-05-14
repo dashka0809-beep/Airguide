@@ -1,0 +1,45 @@
+-- ============================================================
+-- schema.sql — Air Guide PostgreSQL schema
+--
+-- ⚠️  PLACEHOLDER (Phase 0)
+-- Энэ файл Phase 1-д ../airguide_database.sql (MySQL)-аас хөрвүүлэгдэнэ.
+-- Дэлгэрэнгүй: ../docs/DATABASE.md ба ../docs/ROADMAP.md#phase-1
+--
+-- Phase 1 эхлэхэд энэ TODO жагсаалтын дагуу бөглөнө:
+--
+-- ============================================================
+-- TODO (Phase 1):
+-- ============================================================
+-- [ ] CREATE TABLE users          (BIGINT IDENTITY, role CHECK, bcrypt hash)
+-- [ ] CREATE TABLE customers      (trigram index, register_no UNIQUE)
+-- [ ] CREATE TABLE airlines       (iata_code CHAR(2), icao_code CHAR(3))
+-- [ ] CREATE TABLE airports       (iata_code CHAR(3) UNIQUE, trgm indices)
+-- [ ] CREATE TABLE aircraft       (option)
+-- [ ] CREATE TABLE flights        (covering index, CHECK departure < arrival)
+-- [ ] CREATE TABLE bookings       (booking_code UNIQUE, metadata JSONB)
+-- [ ] CREATE TABLE passengers     (passport_no NULLABLE — Phase 1 fix)
+-- [ ] CREATE TABLE tickets        (partial unique WHERE status='issued')
+-- [ ] CREATE TABLE payments       (status pending|success|failed|refunded)
+-- [ ] CREATE TABLE seats          (per-seat inventory — double-booking fix)
+-- [ ] CREATE TABLE audit_log      (Phase 1 шинэ — change history)
+--
+-- [ ] CREATE VIEW v_flight_details
+-- [ ] CREATE VIEW v_booking_details
+-- [ ] CREATE MATERIALIZED VIEW mv_monthly_revenue (Phase 4)
+--
+-- [ ] CREATE FUNCTION fn_after_ticket_insert     (suudal -1)
+-- [ ] CREATE FUNCTION fn_after_payment_change    (paid_amount tooцох, refund)
+-- [ ] CREATE FUNCTION fn_set_updated_at          (бүх хүснэгтэд)
+--
+-- Хөрвүүлэх дүрмүүд (MySQL → Postgres):
+--   AUTO_INCREMENT          → GENERATED ALWAYS AS IDENTITY
+--   ENUM(...)               → TEXT CHECK (col IN (...))
+--   DATETIME DEFAULT NOW()  → TIMESTAMPTZ DEFAULT NOW()
+--   ON UPDATE CURRENT_TIMESTAMP → trigger (fn_set_updated_at)
+--   LAST_INSERT_ID()        → RETURNING id
+--   DELIMITER //            → $$ ... $$ block
+--
+-- ============================================================
+
+-- Аль хэдийн idempotent болгох — DROP IF EXISTS бүхэн өмнө нь
+-- (Phase 1-д бичигдэнэ)
