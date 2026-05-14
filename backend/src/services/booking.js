@@ -345,12 +345,13 @@ export async function cancelBooking(bookingCode, reason = null) {
       [booking.booking_id]
     );
 
-    // 4) Захиалга cancel
+    // 4) Захиалга cancel — $2 type-г explicit cast хийнэ (NULL үед required)
     await client.query(
       `
       UPDATE bookings
          SET status = 'cancelled',
-             notes  = COALESCE(notes, '') || CASE WHEN $2 IS NOT NULL THEN E'\nCancelled: ' || $2 ELSE '' END,
+             notes  = COALESCE(notes, '')
+                      || COALESCE(E'\nCancelled: ' || $2::text, ''),
              updated_at = NOW()
        WHERE booking_id = $1
       `,
