@@ -1,0 +1,264 @@
+/* ============================================================
+ * layout.css — Page-ийн ерөнхий хэсгүүд:
+ * topbar, header/nav, hero, section, footer
+ * ============================================================ */
+
+/* ===== TOP BAR (хамгийн дээд харааны мөр) ===== */
+.topbar {
+  background: var(--dark);
+  color: #c5cbd8;
+  font-size: 13px;
+  padding: 8px 0;
+}
+.topbar-inner {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+.topbar-left {
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+.topbar-left a,
+.topbar-left span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: #c5cbd8;
+  transition: color .2s;
+}
+.topbar-left a:hover { color: white; }
+.topbar-right {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+}
+.topbar-right a {
+  color: #c5cbd8;
+  transition: color .2s;
+}
+.topbar-right a:hover { color: var(--accent); }
+
+/* ===== HEADER / NAVIGATION ===== */
+header.main {
+  background: white;
+  border-bottom: 1px solid var(--border);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+.nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 76px;
+}
+.logo {
+  display: flex;
+  align-items: center;
+  height: 52px;
+}
+.logo svg {
+  height: 100%;
+  width: auto;
+}
+.nav-links {
+  display: flex;
+  gap: 32px;
+  list-style: none;
+}
+.nav-links a {
+  font-weight: 600;
+  font-size: 15px;
+  color: var(--text);
+  padding: 8px 0;
+  position: relative;
+  transition: color .2s;
+}
+.nav-links a:hover { color: var(--primary); }
+.nav-links a.active::after {
+  content: '';
+  position: absolute;
+  bottom: -28px;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: var(--primary);
+  border-radius: 3px 3px 0 0;
+}
+.nav-right {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+.lang-switch {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+  transition: all .2s;
+}
+.lang-switch:hover {
+  border-color: var(--primary);
+  color: var(--primary);
+}
+.menu-toggle {
+  display: none;
+  background: none;
+  border: none;
+  font-size: 24px;
+  color: var(--text);
+}
+
+/* ===== HERO (нүүр хуудасны том хэсэг) ===== */
+.hero {
+  position: relative;
+  background: linear-gradient(135deg, #1690c2 0%, #29abe2 50%, #5dc0e8 100%);
+  color: white;
+  padding: 60px 0 120px;
+  overflow: hidden;
+}
+.hero::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image:
+    radial-gradient(circle at 20% 80%, rgba(255,255,255,0.08) 0%, transparent 50%),
+    radial-gradient(circle at 80% 20%, rgba(253,197,46,0.12) 0%, transparent 50%);
+  pointer-events: none;
+}
+.hero-content {
+  position: relative;
+  text-align: center;
+  margin-bottom: 40px;
+}
+.hero h1 {
+  font-size: clamp(28px, 4.5vw, 44px);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  margin-bottom: 12px;
+}
+.hero .subtitle {
+  font-size: 17px;
+  opacity: 0.9;
+}
+
+/* ===== SECTION ерөнхий тохиргоо ===== */
+section {
+  padding: 72px 0;
+}
+.section-head {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  margin-bottom: 32px;
+  gap: 16px;
+}
+.section-head h2 {
+  font-size: clamp(24px, 3vw, 32px);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+.section-head .sub {
+  color: var(--text-light);
+  margin-top: 4px;
+  font-size: 15px;
+}
+.section-head a.see-all {
+  color: var(--primary);
+  font-weight: 600;
+  font-size: 14px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* ===== FOOTER ===== */
+footer {
+  background: var(--dark);
+  color: #c5cbd8;
+  padding: 60px 0 20px;
+}
+.footer-grid {
+  display: grid;
+  grid-template-columns: 1.5fr 1fr 1fr 1.2fr;
+  gap: 40px;
+  margin-bottom: 40px;
+}
+.footer-brand p {
+  font-size: 14px;
+  line-height: 1.7;
+  margin: 16px 0;
+  max-width: 320px;
+}
+.social {
+  display: flex;
+  gap: 10px;
+}
+.social a {
+  width: 36px;
+  height: 36px;
+  background: rgba(255,255,255,0.08);
+  border-radius: 8px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: all .2s;
+}
+.social a:hover {
+  background: var(--primary);
+  color: white;
+}
+.footer-col h4 {
+  color: white;
+  font-size: 15px;
+  font-weight: 700;
+  margin-bottom: 16px;
+}
+.footer-col ul {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.footer-col a {
+  font-size: 14px;
+  transition: color .2s;
+}
+.footer-col a:hover { color: var(--accent); }
+.footer-contact li {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  font-size: 14px;
+  margin-bottom: 12px;
+}
+.footer-contact .ic {
+  color: var(--primary);
+  flex-shrink: 0;
+}
+.footer-bottom {
+  border-top: 1px solid rgba(255,255,255,0.1);
+  padding-top: 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 13px;
+  color: #8892a8;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+.footer-bottom-links {
+  display: flex;
+  gap: 20px;
+}
+.footer-bottom-links a:hover { color: white; }

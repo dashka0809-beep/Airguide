@@ -1,0 +1,35 @@
+/* ============================================================
+ * tokens.css — Design tokens (өнгө, fontsize, spacing, radius)
+ * Бүх бусад CSS файл эдгээр хувьсагчийг ашиглана.
+ * ============================================================ */
+
+:root {
+  /* Брэндийн өнгө */
+  --primary: #29abe2;
+  --primary-dark: #1690c2;
+  --primary-light: #e3f5fc;
+  --accent: #fdc52e;
+  --accent-dark: #f0b620;
+
+  /* Бичвэрийн өнгө */
+  --dark: #0f1729;
+  --text: #111827;
+  --text-light: #6b7280;
+  --text-mute: #9ca3af;
+
+  /* Дэвсгэр өнгө */
+  --bg: #ffffff;
+  --bg-soft: #f5f7fb;
+  --bg-card: #ffffff;
+  --border: #e5e7eb;
+  --border-soft: #f1f3f7;
+
+  /* Сүүдэр */
+  --shadow-sm: 0 1px 3px rgba(15, 23, 41, 0.06);
+  --shadow: 0 4px 16px rgba(15, 23, 41, 0.06);
+  --shadow-lg: 0 12px 40px rgba(15, 23, 41, 0.10);
+
+  /* Булангийн муруйлт */
+  --radius: 12px;
+  --radius-lg: 16px;
+}

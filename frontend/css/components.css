@@ -1,0 +1,317 @@
+/* ============================================================
+ * components.css — Дахин ашиглах боломжтой UI хэсгүүд:
+ * search box, destination cards, FAQ, features
+ * Хамгийн сүүлд: responsive media queries (бүх файлд хамаатай)
+ * ============================================================ */
+
+/* ===== SEARCH BOX (нислэг хайх форм) ===== */
+.search-wrap {
+  position: relative;
+  z-index: 5;
+}
+.search-box {
+  background: white;
+  border-radius: 16px;
+  padding: 20px;
+  box-shadow: 0 24px 60px rgba(15, 23, 41, 0.18);
+}
+.trip-tabs {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 16px;
+  background: var(--bg-soft);
+  padding: 4px;
+  border-radius: 10px;
+  width: fit-content;
+}
+.trip-tab {
+  background: transparent;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 13px;
+  color: var(--text-light);
+  transition: all .2s;
+}
+.trip-tab.active {
+  background: white;
+  color: var(--primary);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+}
+.search-grid {
+  display: grid;
+  grid-template-columns: 1.2fr 1.2fr 1fr 1fr 0.9fr auto;
+  gap: 8px;
+  align-items: end;
+}
+.field {
+  background: var(--bg-soft);
+  border-radius: 10px;
+  padding: 10px 14px;
+  transition: all .2s;
+  cursor: text;
+}
+.field:hover { background: #eef1f6; }
+.field-label {
+  display: block;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-light);
+  margin-bottom: 4px;
+}
+.field input,
+.field select {
+  width: 100%;
+  border: none;
+  background: transparent;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text);
+  outline: none;
+  font-family: inherit;
+}
+.field .sub {
+  font-size: 12px;
+  color: var(--text-mute);
+  margin-top: 2px;
+}
+.search-btn {
+  background: var(--accent);
+  color: var(--dark);
+  border: none;
+  padding: 0 28px;
+  height: 100%;
+  min-height: 76px;
+  border-radius: 12px;
+  font-weight: 700;
+  font-size: 16px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: all .2s;
+}
+.search-btn:hover {
+  background: var(--accent-dark);
+  transform: translateY(-1px);
+  box-shadow: 0 10px 24px rgba(253, 197, 46, 0.4);
+}
+
+/* ===== DESTINATION CARDS (алдартай чиглэлүүд) ===== */
+.destinations {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 20px;
+}
+.dest-card {
+  background: white;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+  transition: all .3s;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+}
+.dest-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-lg);
+}
+.dest-banner {
+  height: 160px;
+  background-size: cover;
+  background-position: center;
+  position: relative;
+}
+.dest-banner::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to top, rgba(0,0,0,0.35) 0%, transparent 60%);
+}
+.dest-city {
+  position: absolute;
+  bottom: 12px;
+  left: 16px;
+  color: white;
+  font-size: 22px;
+  font-weight: 800;
+  z-index: 2;
+  text-shadow: 0 2px 6px rgba(0,0,0,0.3);
+}
+.dest-body {
+  padding: 16px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+.dest-freq {
+  font-size: 13px;
+  color: var(--text-light);
+  margin-bottom: 12px;
+}
+.dest-airlines {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 14px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+.airline-dot {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 11px;
+  font-weight: 800;
+  border: 2px solid white;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+.dest-action {
+  margin-top: auto;
+  background: var(--bg-soft);
+  color: var(--text);
+  border: none;
+  padding: 10px;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 13px;
+  transition: all .2s;
+}
+.dest-card:hover .dest-action {
+  background: var(--primary);
+  color: white;
+}
+
+/* ===== FAQ (Түгээмэл асуултууд) ===== */
+.faq-section {
+  background: var(--bg-soft);
+}
+.faq-list {
+  max-width: 800px;
+  margin: 0 auto;
+}
+.faq-item {
+  background: white;
+  border-radius: var(--radius);
+  margin-bottom: 12px;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  transition: all .2s;
+}
+.faq-item.open {
+  box-shadow: var(--shadow);
+  border-color: var(--primary-light);
+}
+.faq-q {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 18px 22px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 15px;
+  color: var(--text);
+  transition: color .2s;
+}
+.faq-q:hover { color: var(--primary); }
+.faq-q .arrow {
+  width: 24px;
+  height: 24px;
+  background: var(--bg-soft);
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--primary);
+  font-size: 14px;
+  transition: transform .2s;
+  flex-shrink: 0;
+  margin-left: 12px;
+}
+.faq-item.open .arrow {
+  transform: rotate(180deg);
+  background: var(--primary);
+  color: white;
+}
+.faq-a {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height .3s;
+  padding: 0 22px;
+  color: var(--text-light);
+  font-size: 14px;
+}
+.faq-item.open .faq-a {
+  max-height: 300px;
+  padding: 0 22px 18px;
+}
+
+/* ===== FEATURES (давуу талуудын хүснэгт) ===== */
+.features-section {
+  background: white;
+}
+.features-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 24px;
+}
+.feature {
+  text-align: center;
+  padding: 24px 16px;
+}
+.feature .fico {
+  width: 60px;
+  height: 60px;
+  background: var(--primary-light);
+  color: var(--primary);
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 26px;
+  margin-bottom: 16px;
+}
+.feature h4 {
+  font-size: 16px;
+  font-weight: 700;
+  margin-bottom: 6px;
+}
+.feature p {
+  font-size: 13px;
+  color: var(--text-light);
+}
+
+/* ============================================================
+ * RESPONSIVE (3 breakpoint: 1024px, 768px, 480px)
+ * Энэ блок layout болон components-ын аль алинд хамаарна
+ * ============================================================ */
+@media (max-width: 1024px) {
+  .destinations { grid-template-columns: repeat(3, 1fr); }
+  .features-grid { grid-template-columns: repeat(2, 1fr); }
+  .search-grid { grid-template-columns: 1fr 1fr; }
+  .search-btn { grid-column: span 2; min-height: 56px; }
+}
+
+@media (max-width: 768px) {
+  .topbar-left .addr { display: none; }
+  .nav-links { display: none; }
+  .menu-toggle { display: block; }
+  .destinations { grid-template-columns: repeat(2, 1fr); }
+  .footer-grid { grid-template-columns: 1fr 1fr; }
+  .features-grid { grid-template-columns: 1fr 1fr; }
+  section { padding: 56px 0; }
+}
+
+@media (max-width: 480px) {
+  .destinations { grid-template-columns: 1fr; }
+  .footer-grid { grid-template-columns: 1fr; }
+  .features-grid { grid-template-columns: 1fr; }
+  .search-grid { grid-template-columns: 1fr; }
+  .search-btn { grid-column: 1; }
+}
