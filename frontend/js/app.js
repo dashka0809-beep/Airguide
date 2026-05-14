@@ -1,15 +1,17 @@
 /* ============================================================
- * app.js — Нүүр хуудасны үндсэн үйлдлүүд
+ * app.js — Нүүр хуудасны үндсэн entry point
  *   - FAQ нээх/хаах
  *   - Аяллын төрөл сонгох (Round / Oneway / Multi)
  *   - Mobile menu toggle
+ *   - Хайлтын форм initialize (search.js)
  *
  * ES module — index.html-д <script type="module"> -р оруулна.
  * ============================================================ */
 
+import { initSearchForm } from './search.js';
+
 /**
  * FAQ item нээх/хаах
- * @param {HTMLElement} questionEl — .faq-q element
  */
 export function toggleFaq(questionEl) {
   const item = questionEl.parentElement;
@@ -18,17 +20,14 @@ export function toggleFaq(questionEl) {
 
 /**
  * Аяллын төрөл сонгох (round / oneway / multi)
- * @param {HTMLElement} btn — дарагдсан .trip-tab товч
- * @param {string} type — 'round' | 'oneway' | 'multi'
  */
 export function setTrip(btn, type) {
   document.querySelectorAll('.trip-tab').forEach(t => t.classList.remove('active'));
   btn.classList.add('active');
-  // Ирээдүйд: form-ын өгөгдөл, "Буцах" талбарыг идэвхгүй болгох гэх мэт
 }
 
 /**
- * Гар утсан дээрх menu (☰) дарвал нав цэс гарч ирэх/хаагдах
+ * Гар утсан дээрх menu (☰) toggle
  */
 function initMobileMenu() {
   const toggle = document.querySelector('.menu-toggle');
@@ -59,13 +58,10 @@ function initMobileMenu() {
   });
 }
 
-/* ============================================================
- * DOM бэлэн болсон үед эхлүүлэх
- * ============================================================ */
 document.addEventListener('DOMContentLoaded', () => {
   initMobileMenu();
 
-  // FAQ — inline onclick="" -г сольж event delegation хийсэн
+  // FAQ — event delegation
   document.querySelectorAll('.faq-q').forEach(q => {
     q.addEventListener('click', () => toggleFaq(q));
   });
@@ -77,4 +73,7 @@ document.addEventListener('DOMContentLoaded', () => {
       setTrip(btn, type);
     });
   });
+
+  // Search form (Phase 2)
+  initSearchForm();
 });
