@@ -3,13 +3,11 @@
   "version": "0.1.0",
   "description": "Air Guide static frontend (vanilla HTML/CSS/JS)",
   "private": true,
+  "type": "module",
   "engines": {
     "node": ">=20.0.0"
   },
   "scripts": {
-    "start": "serve . -l tcp://0.0.0.0:${PORT:-3000} --no-clipboard"
-  },
-  "dependencies": {
-    "serve": "^14.2.3"
+    "start": "node server.js"
   }
 }
