@@ -16,6 +16,11 @@ import rateLimit from '@fastify/rate-limit';
 import { config } from './src/config.js';
 import { checkDbHealth, closeDb } from './src/db.js';
 
+// Phase 1 routes
+import airportRoutes from './src/routes/airports.js';
+import airlineRoutes from './src/routes/airlines.js';
+import flightRoutes  from './src/routes/flights.js';
+
 // ============================================================
 // Fastify instance
 // ============================================================
@@ -54,10 +59,10 @@ await fastify.register(rateLimit, {
 });
 
 // ============================================================
-// Routes (Phase 0 — зөвхөн health)
-// Phase 1-д src/routes/ дотроос автомат бүртгэнэ.
+// Routes
 // ============================================================
 
+// Public endpoints
 fastify.get('/api/health', async () => {
   const dbOk = await checkDbHealth();
   return {
@@ -73,9 +78,20 @@ fastify.get('/', async () => {
     name: 'Air Guide API',
     version: '0.1.0',
     docs: config.isDevelopment ? '/docs' : null,
-    health: '/api/health'
+    health: '/api/health',
+    endpoints: [
+      'GET  /api/airports?q=&limit=',
+      'GET  /api/airlines',
+      'GET  /api/flights/search?from=&to=&departure_date=&return_date=',
+      'GET  /api/flights/:id'
+    ]
   };
 });
+
+// Phase 1 route bundles (/api prefix)
+await fastify.register(airportRoutes, { prefix: '/api' });
+await fastify.register(airlineRoutes, { prefix: '/api' });
+await fastify.register(flightRoutes,  { prefix: '/api' });
 
 // ============================================================
 // Error handler
