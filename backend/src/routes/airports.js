@@ -14,26 +14,28 @@ export default async function airportRoutes(fastify) {
   fastify.get('/airports', async (req, reply) => {
     const { q, limit } = airportSearchQuerySchema.parse(req.query);
 
-    // 3 нэр хайх + trigram similarity-аар rank
-    // - iata_code prefix хамгийн өндөр rank
-    // - city prefix дараагийнх
-    // - name дотор substring
-    // - тригам similarity (typo үед)
+    // Rank: exact iata > iata prefix > city prefix > city substring > similarity
+    // Trigram threshold 0.15 болгож "ulan" → "Ulaanbaatar" (sim 0.21) ч таарна
     const { rows } = await query(
       `
       SELECT
         airport_id, iata_code, icao_code, name, city, country, timezone,
         GREATEST(
+          CASE WHEN UPPER(iata_code) = UPPER($1)        THEN 1.00 ELSE 0 END,
+          CASE WHEN iata_code ILIKE $1 || '%'           THEN 0.90 ELSE 0 END,
+          CASE WHEN city      ILIKE $1 || '%'           THEN 0.85 ELSE 0 END,
+          CASE WHEN city      ILIKE '%' || $1 || '%'    THEN 0.70 ELSE 0 END,
+          CASE WHEN name      ILIKE '%' || $1 || '%'    THEN 0.65 ELSE 0 END,
           similarity(city, $1),
-          similarity(name, $1),
-          CASE WHEN iata_code ILIKE $1 || '%' THEN 1.0 ELSE 0 END
+          similarity(name, $1) * 0.8
         ) AS rank
       FROM airports
-      WHERE city ILIKE $1 || '%'
-         OR name ILIKE '%' || $1 || '%'
-         OR iata_code ILIKE $1 || '%'
-         OR city % $1
-         OR name % $1
+      WHERE iata_code ILIKE $1 || '%'
+         OR city      ILIKE $1 || '%'
+         OR city      ILIKE '%' || $1 || '%'
+         OR name      ILIKE '%' || $1 || '%'
+         OR similarity(city, $1) > 0.15
+         OR similarity(name, $1) > 0.20
       ORDER BY rank DESC, city ASC
       LIMIT $2
       `,
