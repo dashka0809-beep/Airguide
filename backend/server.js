@@ -20,6 +20,7 @@ import { checkDbHealth, closeDb } from './src/db.js';
 import airportRoutes from './src/routes/airports.js';
 import airlineRoutes from './src/routes/airlines.js';
 import flightRoutes  from './src/routes/flights.js';
+import bookingRoutes from './src/routes/bookings.js';
 
 // ============================================================
 // Fastify instance
@@ -83,7 +84,10 @@ fastify.get('/', async () => {
       'GET  /api/airports?q=&limit=',
       'GET  /api/airlines',
       'GET  /api/flights/search?from=&to=&departure_date=&return_date=',
-      'GET  /api/flights/:id'
+      'GET  /api/flights/:id',
+      'POST /api/bookings',
+      'GET  /api/bookings/:code',
+      'POST /api/bookings/:code/cancel'
     ]
   };
 });
@@ -92,6 +96,7 @@ fastify.get('/', async () => {
 await fastify.register(airportRoutes, { prefix: '/api' });
 await fastify.register(airlineRoutes, { prefix: '/api' });
 await fastify.register(flightRoutes,  { prefix: '/api' });
+await fastify.register(bookingRoutes, { prefix: '/api' });
 
 // ============================================================
 // Error handler

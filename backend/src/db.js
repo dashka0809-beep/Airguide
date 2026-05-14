@@ -53,6 +53,33 @@ export async function checkDbHealth() {
   }
 }
 
+/**
+ * Transaction helper — BEGIN/COMMIT/ROLLBACK автоматаар хийнэ
+ *
+ * Хэрэглэх:
+ *   const result = await transaction(async (client) => {
+ *     await client.query('SELECT ... FOR UPDATE', [id]);
+ *     await client.query('INSERT INTO ...');
+ *     return { ok: true };
+ *   });
+ *
+ * Алдаа гарвал автоматаар ROLLBACK хийгээд error-г re-throw хийнэ.
+ */
+export async function transaction(fn) {
+  const client = await pool.connect();
+  try {
+    await client.query('BEGIN');
+    const result = await fn(client);
+    await client.query('COMMIT');
+    return result;
+  } catch (err) {
+    try { await client.query('ROLLBACK'); } catch (_) { /* swallow */ }
+    throw err;
+  } finally {
+    client.release();
+  }
+}
+
 /** Graceful shutdown — pool дуусгана */
 export async function closeDb() {
   await pool.end();
