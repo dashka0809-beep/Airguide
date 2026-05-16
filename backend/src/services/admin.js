@@ -247,14 +247,29 @@ export async function revenueReport(f) {
      GROUP BY 1 ORDER BY 1 DESC LIMIT 12`, params
   );
 
+  // payments↔tickets шууд join хийвэл нэг захиалгад олон тийз байхад төлбөр
+  // давхар тоологдоно (fan-out). Иймд захиалгын бодит төлбөрийг тийзүүдийн
+  // үнийн хувь хэмжээгээр агаарын компаниудад хуваарилна — нийлбэр нь
+  // total_revenue-тэй тэнцэнэ.
   const { rows: byAirline } = await query(
-    `SELECT al.iata_code AS airline, al.name AS airline_name,
-            SUM(p.amount)::numeric AS revenue, COUNT(DISTINCT p.booking_id)::int AS bookings
-     FROM payments p
-     JOIN tickets t  ON t.booking_id = p.booking_id
-     JOIN flights f  ON f.flight_id = t.flight_id
-     JOIN airlines al ON al.airline_id = f.airline_id
-     WHERE ${wherePfx}
+    `WITH pay AS (
+        SELECT p.booking_id, SUM(p.amount)::numeric AS paid
+        FROM payments p
+        WHERE ${wherePfx}
+        GROUP BY p.booking_id
+     ),
+     tk AS (
+        SELECT t.booking_id, t.price, f.airline_id,
+               SUM(t.price) OVER (PARTITION BY t.booking_id) AS booking_ticket_total
+        FROM tickets t
+        JOIN flights f ON f.flight_id = t.flight_id
+     )
+     SELECT al.iata_code AS airline, al.name AS airline_name,
+            COALESCE(SUM(pay.paid * tk.price / NULLIF(tk.booking_ticket_total, 0)), 0)::numeric AS revenue,
+            COUNT(DISTINCT tk.booking_id)::int AS bookings
+     FROM tk
+     JOIN pay         ON pay.booking_id = tk.booking_id
+     JOIN airlines al ON al.airline_id  = tk.airline_id
      GROUP BY 1,2 ORDER BY 3 DESC LIMIT 10`,
     params
   );
