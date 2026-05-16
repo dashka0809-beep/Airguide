@@ -27,6 +27,9 @@ import bookingRoutes from './src/routes/bookings.js';
 
 // Phase 4 routes
 import authRoutes from './src/routes/auth.js';
+import adminBookingRoutes from './src/routes/admin/bookings.js';
+import adminFlightRoutes from './src/routes/admin/flights.js';
+import adminReportRoutes from './src/routes/admin/reports.js';
 
 // ============================================================
 // Fastify instance
@@ -99,7 +102,13 @@ fastify.get('/', async () => {
       'POST /api/bookings/:code/cancel',
       'POST /api/auth/login',
       'POST /api/auth/refresh',
-      'GET  /api/auth/me'
+      'GET  /api/auth/me',
+      'GET  /api/admin/bookings',
+      'PATCH /api/admin/bookings/:id',
+      'GET  /api/admin/flights',
+      'POST /api/admin/flights',
+      'PATCH /api/admin/flights/:id',
+      'GET  /api/admin/reports/revenue'
     ]
   };
 });
@@ -112,6 +121,9 @@ await fastify.register(bookingRoutes, { prefix: '/api' });
 
 // Phase 4 route bundles
 await fastify.register(authRoutes, { prefix: '/api' });
+await fastify.register(adminBookingRoutes, { prefix: '/api/admin' });
+await fastify.register(adminFlightRoutes,  { prefix: '/api/admin' });
+await fastify.register(adminReportRoutes,  { prefix: '/api/admin' });
 
 // ============================================================
 // Error handler
