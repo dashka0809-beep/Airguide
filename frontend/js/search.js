@@ -92,7 +92,125 @@ function renderFlightCard(f) {
   `;
 }
 
+// ----- Filter / sort state -----
+let lastSearch = { outbound: [], inbound: [], meta: null };
+const filters = {
+  sort: 'price_asc',
+  airlines: new Set(),  // хоосон = бүгд
+  times: new Set()      // хоосон = бүгд; 'morning'|'afternoon'|'evening'
+};
+
+function depHour(iso) {
+  const s = new Date(iso).toLocaleString('en-GB', {
+    hour: '2-digit', hour12: false, timeZone: 'Asia/Ulaanbaatar'
+  });
+  return parseInt(s, 10) || 0;
+}
+
+function timeBucket(iso) {
+  const h = depHour(iso);
+  if (h < 12) return 'morning';
+  if (h < 18) return 'afternoon';
+  return 'evening';
+}
+
+const SORT_CMP = {
+  price_asc:  (a, b) => (a.price.economy ?? 1e15) - (b.price.economy ?? 1e15),
+  price_desc: (a, b) => (b.price.economy ?? 0) - (a.price.economy ?? 0),
+  dep_early:  (a, b) => new Date(a.departure_time) - new Date(b.departure_time),
+  duration:   (a, b) => a.duration_minutes - b.duration_minutes
+};
+
+function applyFilters(list) {
+  const filtered = list.filter(f => {
+    if (filters.airlines.size && !filters.airlines.has(f.airline.code)) return false;
+    if (filters.times.size && !filters.times.has(timeBucket(f.departure_time))) return false;
+    return true;
+  });
+  return filtered.sort(SORT_CMP[filters.sort] || SORT_CMP.price_asc);
+}
+
+function renderToolbar() {
+  const all = [...lastSearch.outbound, ...lastSearch.inbound];
+  const airlineMap = new Map(all.map(f => [f.airline.code, f.airline.name]));
+  const airlines = [...airlineMap.entries()].sort((a, b) => a[1].localeCompare(b[1]));
+
+  const sortOpts = [
+    ['price_asc',  'Үнэ: бага → их'],
+    ['price_desc', 'Үнэ: их → бага'],
+    ['dep_early',  'Хөөрөх: эрт → орой'],
+    ['duration',   'Хугацаа: богино']
+  ];
+  const times = [
+    ['morning',   '🌅 Өглөө (00–12)'],
+    ['afternoon', '☀️ Өдөр (12–18)'],
+    ['evening',   '🌙 Орой (18–24)']
+  ];
+
+  return `
+    <div class="filter-toolbar">
+      <div class="ft-group">
+        <label class="ft-label">Эрэмбэлэх</label>
+        <select id="ft-sort" class="ft-select">
+          ${sortOpts.map(([v, l]) =>
+            `<option value="${v}" ${filters.sort === v ? 'selected' : ''}>${l}</option>`
+          ).join('')}
+        </select>
+      </div>
+      <div class="ft-group">
+        <label class="ft-label">Цаг</label>
+        <div class="ft-chips">
+          ${times.map(([v, l]) =>
+            `<button type="button" class="ft-chip ${filters.times.has(v) ? 'on' : ''}" data-time="${v}">${l}</button>`
+          ).join('')}
+        </div>
+      </div>
+      <div class="ft-group">
+        <label class="ft-label">Агаарын компани</label>
+        <div class="ft-chips">
+          ${airlines.map(([code, name]) =>
+            `<button type="button" class="ft-chip ${filters.airlines.has(code) ? 'on' : ''}" data-airline="${code}">${escapeHtml(name)}</button>`
+          ).join('')}
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function renderLegList() {
+  const out = applyFilters(lastSearch.outbound);
+  const inb = applyFilters(lastSearch.inbound);
+  let html = '';
+  if (lastSearch.outbound.length > 0) {
+    html += `
+      <div class="results-leg">
+        <h3 class="leg-title">✈ Очих (${out.length}/${lastSearch.outbound.length})</h3>
+        <div class="flight-list">
+          ${out.length ? out.map(renderFlightCard).join('') : '<div class="results-empty"><p>Шүүлтэд тохирох нислэг алга</p></div>'}
+        </div>
+      </div>
+    `;
+  }
+  if (lastSearch.inbound.length > 0) {
+    html += `
+      <div class="results-leg">
+        <h3 class="leg-title">🔄 Буцах (${inb.length}/${lastSearch.inbound.length})</h3>
+        <div class="flight-list">
+          ${inb.length ? inb.map(renderFlightCard).join('') : '<div class="results-empty"><p>Шүүлтэд тохирох нислэг алга</p></div>'}
+        </div>
+      </div>
+    `;
+  }
+  return html;
+}
+
 function renderResults({ outbound, inbound }, meta) {
+  // Reset filter state on new search
+  lastSearch = { outbound, inbound, meta };
+  filters.sort = 'price_asc';
+  filters.airlines.clear();
+  filters.times.clear();
+
   const totalCount = meta.outbound_count + meta.inbound_count;
   if (totalCount === 0) {
     return `
@@ -104,28 +222,10 @@ function renderResults({ outbound, inbound }, meta) {
     `;
   }
 
-  let html = '';
-  if (outbound.length > 0) {
-    html += `
-      <div class="results-leg">
-        <h3 class="leg-title">✈ Очих ${outbound.length > 1 ? `(${outbound.length} нислэг)` : ''}</h3>
-        <div class="flight-list">
-          ${outbound.map(renderFlightCard).join('')}
-        </div>
-      </div>
-    `;
-  }
-  if (inbound.length > 0) {
-    html += `
-      <div class="results-leg">
-        <h3 class="leg-title">🔄 Буцах ${inbound.length > 1 ? `(${inbound.length} нислэг)` : ''}</h3>
-        <div class="flight-list">
-          ${inbound.map(renderFlightCard).join('')}
-        </div>
-      </div>
-    `;
-  }
-  return html;
+  return `
+    ${renderToolbar()}
+    <div id="filtered-list">${renderLegList()}</div>
+  `;
 }
 
 function showLoading(container) {
@@ -216,12 +316,38 @@ export function initSearchForm() {
 
   // ----- Захиалах товч (event delegation) -----
   resultsContent.addEventListener('click', (e) => {
+    // Захиалах товч
     const btn = e.target.closest('.btn-book');
-    if (!btn) return;
-    const flightId = btn.dataset.flightId;
-    const passengers = parseInt(btn.dataset.passengers, 10) || 1;
-    const classType = btn.dataset.class || 'economy';
-    openBookingModal({ flightId, passengers, classType });
+    if (btn) {
+      const flightId = btn.dataset.flightId;
+      const passengers = parseInt(btn.dataset.passengers, 10) || 1;
+      const classType = btn.dataset.class || 'economy';
+      openBookingModal({ flightId, passengers, classType });
+      return;
+    }
+    // Filter chip (цаг / компани toggle)
+    const chip = e.target.closest('.ft-chip');
+    if (chip) {
+      if (chip.dataset.time) {
+        const v = chip.dataset.time;
+        filters.times.has(v) ? filters.times.delete(v) : filters.times.add(v);
+      } else if (chip.dataset.airline) {
+        const v = chip.dataset.airline;
+        filters.airlines.has(v) ? filters.airlines.delete(v) : filters.airlines.add(v);
+      }
+      chip.classList.toggle('on');
+      const listEl = document.querySelector('#filtered-list');
+      if (listEl) listEl.innerHTML = renderLegList();
+    }
+  });
+
+  // Sort dropdown өөрчлөгдөх
+  resultsContent.addEventListener('change', (e) => {
+    if (e.target.id === 'ft-sort') {
+      filters.sort = e.target.value;
+      const listEl = document.querySelector('#filtered-list');
+      if (listEl) listEl.innerHTML = renderLegList();
+    }
   });
 
   // ----- Search button -----
