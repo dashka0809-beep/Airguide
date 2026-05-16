@@ -18,13 +18,22 @@
 -- =====================================================================
 
 -- =====================================================================
--- 1. USERS — Ажилтнууд (bcrypt placeholder hash)
+-- 1. USERS — Ажилтнууд
+-- ⚠️ DEV нууц үг (production-д солих):
+--     admin / Admin@123      (role: admin)
+--     munkh / Manager@123    (role: manager)
+--     saraa / Agent@123      (role: agent)
+-- Hash нь bcrypt cost=12. ON CONFLICT DO UPDATE — дахин ачаалахад
+-- hash шинэчлэгдэнэ (placeholder-аас бодит руу шилжих).
 -- =====================================================================
 INSERT INTO users (username, password_hash, full_name, email, phone, role) VALUES
-  ('admin', '$2b$12$placeholder.admin.hash.replace.in.production.dev1', 'Бат-Эрдэнэ Дорж', 'admin@airguide.mn', '99001122', 'admin'),
-  ('munkh', '$2b$12$placeholder.manager.hash.replace.in.production.dev', 'Мөнхбат Туяа',     'munkh@airguide.mn', '99223344', 'manager'),
-  ('saraa', '$2b$12$placeholder.agent.hash.replace.in.production.dev2', 'Сарангэрэл Бат',     'saraa@airguide.mn', '99112233', 'agent')
-ON CONFLICT (username) DO NOTHING;
+  ('admin', '$2b$12$izyvlHERRb4n9qyB.rMNpu.3URizKeD6oOyP7pcem/wL2iOPrVeU6', 'Бат-Эрдэнэ Дорж', 'admin@airguide.mn', '99001122', 'admin'),
+  ('munkh', '$2b$12$s4CIn547T70.dwiouuPK.OKV8.l8ReeGF1EAvJs9p3X2FXjQUlUvm', 'Мөнхбат Туяа',     'munkh@airguide.mn', '99223344', 'manager'),
+  ('saraa', '$2b$12$6KSrkOU5utTSYaiA.PQBPuYNjRfrbUNXx0iwpdgOJfxKP3Y8kJllq', 'Сарангэрэл Бат',     'saraa@airguide.mn', '99112233', 'agent')
+ON CONFLICT (username) DO UPDATE
+  SET password_hash = EXCLUDED.password_hash,
+      full_name     = EXCLUDED.full_name,
+      role          = EXCLUDED.role;
 
 
 -- =====================================================================
@@ -150,7 +159,10 @@ CROSS JOIN generate_series(
   TIMESTAMPTZ '2026-05-20 00:00:00+00',
   TIMESTAMPTZ '2026-09-30 00:00:00+00',
   INTERVAL '1 day'
-) AS gs(day);
+) AS gs(day)
+-- Idempotency guard: flights аль хэдийн байвал дахин оруулахгүй
+-- (seed-ийг schema-гүйгээр дахин ажиллуулахад давхардлаас сэргийлнэ)
+WHERE NOT EXISTS (SELECT 1 FROM flights LIMIT 1);
 
 
 -- =====================================================================

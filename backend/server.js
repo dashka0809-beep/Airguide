@@ -16,11 +16,17 @@ import rateLimit from '@fastify/rate-limit';
 import { config } from './src/config.js';
 import { checkDbHealth, closeDb } from './src/db.js';
 
+// Plugins
+import authPlugin from './src/plugins/auth.js';
+
 // Phase 1 routes
 import airportRoutes from './src/routes/airports.js';
 import airlineRoutes from './src/routes/airlines.js';
 import flightRoutes  from './src/routes/flights.js';
 import bookingRoutes from './src/routes/bookings.js';
+
+// Phase 4 routes
+import authRoutes from './src/routes/auth.js';
 
 // ============================================================
 // Fastify instance
@@ -59,6 +65,9 @@ await fastify.register(rateLimit, {
   keyGenerator: (req) => req.ip
 });
 
+// Auth decorator (fastify.authenticate, fastify.requireRole)
+await fastify.register(authPlugin);
+
 // ============================================================
 // Routes
 // ============================================================
@@ -87,7 +96,10 @@ fastify.get('/', async () => {
       'GET  /api/flights/:id',
       'POST /api/bookings',
       'GET  /api/bookings/:code',
-      'POST /api/bookings/:code/cancel'
+      'POST /api/bookings/:code/cancel',
+      'POST /api/auth/login',
+      'POST /api/auth/refresh',
+      'GET  /api/auth/me'
     ]
   };
 });
@@ -97,6 +109,9 @@ await fastify.register(airportRoutes, { prefix: '/api' });
 await fastify.register(airlineRoutes, { prefix: '/api' });
 await fastify.register(flightRoutes,  { prefix: '/api' });
 await fastify.register(bookingRoutes, { prefix: '/api' });
+
+// Phase 4 route bundles
+await fastify.register(authRoutes, { prefix: '/api' });
 
 // ============================================================
 // Error handler
