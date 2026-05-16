@@ -61,7 +61,7 @@
       <li><a href="#contact" data-i18n="nav.contact">Холбоо барих</a></li>
     </ul>
     <div class="nav-right">
-      <a href="#" class="lang-switch">🌐 MN / EN</a>
+      <a href="#" class="lang-switch" data-i18n="lang.switch">🌐 EN</a>
       <button class="menu-toggle" aria-label="Цэс">☰</button>
     </div>
   </div>
@@ -77,41 +77,41 @@
     <div class="search-wrap">
       <div class="search-box">
         <div class="trip-tabs">
-          <button class="trip-tab active" data-trip="round">Очиж буцах</button>
-          <button class="trip-tab" data-trip="oneway">Нэг талын</button>
-          <button class="trip-tab" data-trip="multi">Олон чиглэл</button>
+          <button class="trip-tab active" data-trip="round" data-i18n="trip.round">Очиж буцах</button>
+          <button class="trip-tab" data-trip="oneway" data-i18n="trip.oneway">Нэг талын</button>
+          <button class="trip-tab" data-trip="multi" data-i18n="trip.multi">Олон чиглэл</button>
         </div>
         <div class="search-grid">
           <div class="field">
-            <span class="field-label">Хаанаас</span>
-            <input type="text" name="from" value="Ulaanbaatar (ULN)" data-value="ULN" autocomplete="off" placeholder="Хот эсвэл IATA код" />
-            <div class="sub">Хайлт автомат</div>
+            <span class="field-label" data-i18n="field.from">Хаанаас</span>
+            <input type="text" name="from" value="Ulaanbaatar (ULN)" data-value="ULN" autocomplete="off" placeholder="Хот эсвэл IATA код" data-i18n-placeholder="field.placeholder.city" />
+            <div class="sub" data-i18n="field.autocomplete">Хайлт автомат</div>
           </div>
-          <button type="button" class="swap-btn" aria-label="From/To солих" title="Чиглэлийг солих">⇄</button>
+          <button type="button" class="swap-btn" aria-label="From/To солих" title="Чиглэлийг солих" data-i18n-title="swap.title">⇄</button>
           <div class="field">
-            <span class="field-label">Хаашаа</span>
-            <input type="text" name="to" value="Seoul (ICN)" data-value="ICN" autocomplete="off" placeholder="Хот эсвэл IATA код" />
-            <div class="sub">Хайлт автомат</div>
+            <span class="field-label" data-i18n="field.to">Хаашаа</span>
+            <input type="text" name="to" value="Seoul (ICN)" data-value="ICN" autocomplete="off" placeholder="Хот эсвэл IATA код" data-i18n-placeholder="field.placeholder.city" />
+            <div class="sub" data-i18n="field.autocomplete">Хайлт автомат</div>
           </div>
           <div class="field">
-            <span class="field-label">Явах</span>
+            <span class="field-label" data-i18n="field.depart">Явах</span>
             <input type="date" name="departure_date" value="2026-06-15" />
-            <div class="sub">Огноо</div>
+            <div class="sub" data-i18n="field.date">Огноо</div>
           </div>
           <div class="field">
-            <span class="field-label">Буцах</span>
+            <span class="field-label" data-i18n="field.return">Буцах</span>
             <input type="date" name="return_date" value="2026-06-22" min="2026-06-15" />
-            <div class="sub">Огноо</div>
+            <div class="sub" data-i18n="field.date">Огноо</div>
           </div>
           <div class="field">
-            <span class="field-label">Зорчигч</span>
+            <span class="field-label" data-i18n="field.pax">Зорчигч</span>
             <select name="passengers">
-              <option value="1">1 насанд хүрэгч</option>
-              <option value="2">2 насанд хүрэгч</option>
-              <option value="3">3 насанд хүрэгч</option>
-              <option value="4">4 насанд хүрэгч</option>
+              <option value="1" data-i18n="pax.1">1 насанд хүрэгч</option>
+              <option value="2" data-i18n="pax.2">2 насанд хүрэгч</option>
+              <option value="3" data-i18n="pax.3">3 насанд хүрэгч</option>
+              <option value="4" data-i18n="pax.4">4 насанд хүрэгч</option>
             </select>
-            <div class="sub">Энгийн зэрэглэл</div>
+            <div class="sub" data-i18n="field.economy">Энгийн зэрэглэл</div>
           </div>
           <button class="search-btn" data-i18n="search.btn">🔍 Хайх</button>
         </div>
@@ -125,8 +125,8 @@
   <div class="container">
     <div class="section-head">
       <div>
-        <h2>Хайлтын үр дүн</h2>
-        <div class="sub">Сонгож, захиалах боломжтой</div>
+        <h2 data-i18n="sec.results">Хайлтын үр дүн</h2>
+        <div class="sub" data-i18n="sec.results.sub">Сонгож, захиалах боломжтой</div>
       </div>
     </div>
     <div id="search-results-content"></div>
@@ -138,10 +138,10 @@
   <div class="container">
     <div class="section-head">
       <div>
-        <h2>Алдартай чиглэлүүд</h2>
-        <div class="sub">UB-аас шууд нислэгтэй хотууд</div>
+        <h2 data-i18n="sec.dest">Алдартай чиглэлүүд</h2>
+        <div class="sub" data-i18n="sec.dest.sub">UB-аас шууд нислэгтэй хотууд</div>
       </div>
-      <a href="#" class="see-all">Бүгдийг үзэх →</a>
+      <a href="#" class="see-all" data-i18n="sec.seeall">Бүгдийг үзэх →</a>
     </div>
     <div class="destinations">
       <div class="dest-card">
@@ -149,14 +149,14 @@
           <span class="dest-city">Seoul</span>
         </div>
         <div class="dest-body">
-          <div class="dest-freq">Өдөр бүр шууд нислэгтэй</div>
+          <div class="dest-freq" data-i18n="dest.daily">Өдөр бүр шууд нислэгтэй</div>
           <div class="dest-airlines">
             <span class="airline-dot" style="background:#1eaee5">M</span>
             <span class="airline-dot" style="background:#ff6b6b">K</span>
             <span class="airline-dot" style="background:#7c3aed">A</span>
             <span style="font-size:12px;color:var(--text-mute);margin-left:4px;">+3</span>
           </div>
-          <button class="dest-action">Өдөр сонгох</button>
+          <button class="dest-action" data-i18n="dest.action">Өдөр сонгох</button>
         </div>
       </div>
 
@@ -165,12 +165,12 @@
           <span class="dest-city">Beijing</span>
         </div>
         <div class="dest-body">
-          <div class="dest-freq">Өдөр бүр шууд нислэгтэй</div>
+          <div class="dest-freq" data-i18n="dest.daily">Өдөр бүр шууд нислэгтэй</div>
           <div class="dest-airlines">
             <span class="airline-dot" style="background:#1eaee5">M</span>
             <span class="airline-dot" style="background:#dc2626">C</span>
           </div>
-          <button class="dest-action">Өдөр сонгох</button>
+          <button class="dest-action" data-i18n="dest.action">Өдөр сонгох</button>
         </div>
       </div>
 
@@ -179,13 +179,13 @@
           <span class="dest-city">Tokyo</span>
         </div>
         <div class="dest-body">
-          <div class="dest-freq">Өдөр бүр шууд нислэгтэй</div>
+          <div class="dest-freq" data-i18n="dest.daily">Өдөр бүр шууд нислэгтэй</div>
           <div class="dest-airlines">
             <span class="airline-dot" style="background:#1eaee5">M</span>
             <span class="airline-dot" style="background:#dc2626">J</span>
             <span class="airline-dot" style="background:#f43f5e">N</span>
           </div>
-          <button class="dest-action">Өдөр сонгох</button>
+          <button class="dest-action" data-i18n="dest.action">Өдөр сонгох</button>
         </div>
       </div>
 
@@ -199,7 +199,7 @@
             <span class="airline-dot" style="background:#dc2626">T</span>
             <span class="airline-dot" style="background:#1eaee5">M</span>
           </div>
-          <button class="dest-action">Өдөр сонгох</button>
+          <button class="dest-action" data-i18n="dest.action">Өдөр сонгох</button>
         </div>
       </div>
 
@@ -213,7 +213,7 @@
             <span class="airline-dot" style="background:#ff6b6b">K</span>
             <span class="airline-dot" style="background:#1eaee5">M</span>
           </div>
-          <button class="dest-action">Өдөр сонгох</button>
+          <button class="dest-action" data-i18n="dest.action">Өдөр сонгох</button>
         </div>
       </div>
 
@@ -226,7 +226,7 @@
           <div class="dest-airlines">
             <span class="airline-dot" style="background:#0ea5e9">S</span>
           </div>
-          <button class="dest-action">Өдөр сонгох</button>
+          <button class="dest-action" data-i18n="dest.action">Өдөр сонгох</button>
         </div>
       </div>
 
@@ -235,12 +235,12 @@
           <span class="dest-city">Hohhot</span>
         </div>
         <div class="dest-body">
-          <div class="dest-freq">Өдөр бүр шууд нислэгтэй</div>
+          <div class="dest-freq" data-i18n="dest.daily">Өдөр бүр шууд нислэгтэй</div>
           <div class="dest-airlines">
             <span class="airline-dot" style="background:#dc2626">C</span>
             <span class="airline-dot" style="background:#1eaee5">M</span>
           </div>
-          <button class="dest-action">Өдөр сонгох</button>
+          <button class="dest-action" data-i18n="dest.action">Өдөр сонгох</button>
         </div>
       </div>
 
@@ -249,11 +249,11 @@
           <span class="dest-city">Frankfurt</span>
         </div>
         <div class="dest-body">
-          <div class="dest-freq">Өдөр бүр шууд нислэгтэй</div>
+          <div class="dest-freq" data-i18n="dest.daily">Өдөр бүр шууд нислэгтэй</div>
           <div class="dest-airlines">
             <span class="airline-dot" style="background:#1eaee5">M</span>
           </div>
-          <button class="dest-action">Өдөр сонгох</button>
+          <button class="dest-action" data-i18n="dest.action">Өдөр сонгох</button>
         </div>
       </div>
     </div>
@@ -266,22 +266,22 @@
     <div class="features-grid">
       <div class="feature">
         <div class="fico">💰</div>
-        <h4>Хамгийн хямд үнэ</h4>
+        <h4 data-i18n="feat.cheap">Хамгийн хямд үнэ</h4>
         <p>500+ агаарын компани харьцуулж хамгийн хямд үнийг олно</p>
       </div>
       <div class="feature">
         <div class="fico">⚡</div>
-        <h4>Хурдан захиалга</h4>
+        <h4 data-i18n="feat.fast">Хурдан захиалга</h4>
         <p>30 секундэд тийз захиалж, имэйл рүү шууд илгээнэ</p>
       </div>
       <div class="feature">
         <div class="fico">🔒</div>
-        <h4>Найдвартай төлбөр</h4>
+        <h4 data-i18n="feat.secure">Найдвартай төлбөр</h4>
         <p>Карт, QPay, дансаар төлөх найдвартай систем</p>
       </div>
       <div class="feature">
         <div class="fico">📞</div>
-        <h4>24/7 тусламж</h4>
+        <h4 data-i18n="feat.support">24/7 тусламж</h4>
         <p>Өдөр шөнөгүй ажилладаг мэргэжлийн баг</p>
       </div>
     </div>
@@ -292,28 +292,28 @@
 <section class="faq-section">
   <div class="container">
     <div class="section-head" style="justify-content: center; text-align: center; flex-direction: column; gap: 8px;">
-      <h2>Түгээмэл асуултууд</h2>
-      <div class="sub">Хамгийн их асуудаг асуултын хариулт</div>
+      <h2 data-i18n="sec.faq">Түгээмэл асуултууд</h2>
+      <div class="sub" data-i18n="sec.faq.sub">Хамгийн их асуудаг асуултын хариулт</div>
     </div>
     <div class="faq-list">
       <div class="faq-item">
-        <div class="faq-q">Нислэгийн тийз хэрхэн захиалах вэ?<span class="arrow">▼</span></div>
+        <div class="faq-q"><span data-i18n="faq.q1">Нислэгийн тийз хэрхэн захиалах вэ?</span><span class="arrow">▼</span></div>
         <div class="faq-a"><p style="padding-top:6px;">Та манай сайтын дээд талд байрлах хайлтын талбараас хаанаас-хаашаа явахаа, явах, буцах огноогоо сонгоод "Хайх" товчийг дарна уу. Гарч ирсэн нислэгүүдээс өөрт тохирох нислэгээ сонгож, зорчигчийн мэдээллээ оруулан, төлбөрөө төлснөөр захиалга баталгаажна.</p></div>
       </div>
       <div class="faq-item">
-        <div class="faq-q">Төлбөрийг яаж хийх вэ?<span class="arrow">▼</span></div>
+        <div class="faq-q"><span data-i18n="faq.q2">Төлбөрийг яаж хийх вэ?</span><span class="arrow">▼</span></div>
         <div class="faq-a"><p style="padding-top:6px;">Картаар (Visa, Mastercard), QPay, SocialPay, эсвэл банкны шилжүүлгээр төлбөр төлөх боломжтой. Төлбөр хийсний дараа e-ticket таны имэйл рүү автоматаар илгээгдэнэ.</p></div>
       </div>
       <div class="faq-item">
-        <div class="faq-q">Тийз авсаны дараа огноо өөрчлөх боломжтой юу?<span class="arrow">▼</span></div>
+        <div class="faq-q"><span data-i18n="faq.q3">Тийз авсаны дараа огноо өөрчлөх боломжтой юу?</span><span class="arrow">▼</span></div>
         <div class="faq-a"><p style="padding-top:6px;">Тийзийн төрлөөс хамаарна. Энгийн (Economy) тийз нь шимтгэлтэйгээр огноо өөрчлөх боломжтой. Flex тийз нь үнэгүй өөрчлөх боломжтой. Дэлгэрэнгүй мэдээллийг тийз худалдаж авахын өмнө шалгаарай.</p></div>
       </div>
       <div class="faq-item">
-        <div class="faq-q">Хүүхдийн тийзийг хэрхэн захиалах вэ?<span class="arrow">▼</span></div>
+        <div class="faq-q"><span data-i18n="faq.q4">Хүүхдийн тийзийг хэрхэн захиалах вэ?</span><span class="arrow">▼</span></div>
         <div class="faq-a"><p style="padding-top:6px;">Хайлтын үед зорчигчийн тоонд "Хүүхэд" эсвэл "Нярай" гэж сонгож нэмнэ. 2-12 насны хүүхдэд хүүхдийн хямдрал, 0-2 насны нярайд тусгай үнэ үйлчилнэ. Хүүхэд насанд хүрэгч хүний хамт зорчих ёстой.</p></div>
       </div>
       <div class="faq-item">
-        <div class="faq-q">НӨАТ-ын баримт өгдөг үү?<span class="arrow">▼</span></div>
+        <div class="faq-q"><span data-i18n="faq.q5">НӨАТ-ын баримт өгдөг үү?</span><span class="arrow">▼</span></div>
         <div class="faq-a"><p style="padding-top:6px;">Тийм. Захиалга баталгаажсаны дараа e-баримтыг таны имэйл рүү автоматаар илгээх бөгөөд НӨАТ.МН системд бүртгэгдэх болно. Байгууллагын баримт авах бол захиалгын үед регистрийн дугаараа оруулна уу.</p></div>
       </div>
     </div>
@@ -359,7 +359,7 @@
       </div>
 
       <div class="footer-col">
-        <h4>Үйлчилгээ</h4>
+        <h4 data-i18n="foot.services">Үйлчилгээ</h4>
         <ul>
           <li><a href="#">Нислэг хайх</a></li>
           <li><a href="#">Нислэгийн хуваарь</a></li>
@@ -369,7 +369,7 @@
       </div>
 
       <div class="footer-col">
-        <h4>Тусламж</h4>
+        <h4 data-i18n="foot.help">Тусламж</h4>
         <ul>
           <li><a href="#">Бидний тухай</a></li>
           <li><a href="#">Холбоо барих</a></li>
@@ -380,7 +380,7 @@
       </div>
 
       <div class="footer-col">
-        <h4>Холбоо барих</h4>
+        <h4 data-i18n="foot.contact">Холбоо барих</h4>
         <ul class="footer-contact">
           <li><span class="ic">📞</span><span>+976 7700-1234<br>+976 9911-5678</span></li>
           <li><span class="ic">✉️</span><span>info@airguide.mn</span></li>
