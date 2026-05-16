@@ -19,6 +19,18 @@ Air Guide бол Монголын нислэгийн тийзний агентл
 
 ---
 
+## 🌐 Live demo
+
+| Үйлчилгээ | URL |
+|---|---|
+| **Вэбсайт** | https://airguide-frontend-production.up.railway.app/ |
+| **API** | https://airguide-production-ec87.up.railway.app/api/health |
+
+Хэрэглэгчийн аялал: **хайх → захиалах (3 алхам) → шалгах → цуцлах** бүрэн ажиллана.
+20 чиглэл, 3,200+ нислэг (2026-05-20 ~ 09-30).
+
+---
+
 ## Quickstart
 
 ### 1. Шаардлага
@@ -39,39 +51,42 @@ cd Airguide
 
 ### 3. Өгөгдлийн сан бэлдэх
 
-**Сонголт A — Local Postgres:**
+**Сонголт A — Local Postgres (psql):**
 ```bash
 createdb airguide_db
+psql airguide_db < db/extensions.sql
 psql airguide_db < db/schema.sql
 psql airguide_db < db/seed.sql
 ```
 
-**Сонголт B — Railway-н Postgres (cloud, dev-д шууд):**
+**Сонголт B — Python helper (psql суулгахгүй):**
 ```bash
-railway login
-railway link
-railway run psql < db/schema.sql
+pip install pg8000
+export DATABASE_URL="postgresql://user:pass@host:port/dbname"
+python scripts/apply_db.py extensions schema seed verify
 ```
 
-Энэ нь 10 хүснэгт, view, trigger, sample data үүсгэнэ.
+Энэ нь 11 хүснэгт, 2 view, 14 trigger, 3,200+ нислэг үүсгэнэ.
 
-### 4. Backend асаах (Phase 1 дууссан үед)
+### 4. Backend асаах
 
 ```bash
 cd backend
 cp .env.example .env       # DATABASE_URL, JWT_SECRET тохируул
 npm install
-npm run dev                # http://localhost:3000
+npm run dev                # http://localhost:3000/api/health
 ```
 
 ### 5. Frontend нээх
 
-`frontend/index.html`-г browser-аар нээх эсвэл хөнгөн static server-ээр serve хийх:
-
 ```bash
 cd frontend
-npx serve -p 5173
+node server.js             # http://localhost:3000 ($PORT-г уншина)
+# эсвэл: python -m http.server 5173
 ```
+
+`frontend/js/config.js`-н `API_BASE`-г локал backend руу заавал
+(`http://localhost:3000/api`) солино.
 
 ---
 
@@ -91,15 +106,19 @@ npx serve -p 5173
 
 ## Одоогийн төлөв
 
-| Хэсэг | Төлөв |
-|---|---|
-| Landing page (frontend) | ✅ Бэлэн ([airguide.html](airguide.html)) |
-| Database schema (MySQL legacy) | ✅ Бэлэн ([airguide_database.sql](airguide_database.sql)) |
-| Database schema (Postgres) | ⏳ Phase 1 эхэнд хөрвүүлэх |
-| Backend API | ⏳ Phase 1 |
-| Захиалгын flow | ⏳ Phase 2 |
-| Admin panel | ⏳ Phase 3 |
-| Төлбөрийн интеграц (QPay) | ⏳ Phase 4 |
+| Phase | Хэсэг | Төлөв |
+|---|---|---|
+| 0 | Foundation (repo, docs, бүтэц) | ✅ Дууссан |
+| 1 | Database (MySQL→Postgres, 11 хүснэгт) | ✅ Дууссан |
+| 1 | Backend API (7 public endpoint) | ✅ Дууссан |
+| 2 | Frontend — хайлт + autocomplete | ✅ Дууссан |
+| 2 | Захиалгын flow (3-алхамт modal) | ✅ Дууссан |
+| 2 | Захиалга шалгах / цуцлах | ✅ Дууссан |
+| 2 | Filter / эрэмбэлэлт | ✅ Дууссан |
+| 2 | MN/EN i18n (бүрэн) | ⏳ Хэсэгчилсэн |
+| 5 | Railway deploy (live) | ✅ Дууссан |
+| 3 | Төлбөр (QPay) + e-ticket email | ⏳ Дараагийнх |
+| 4 | Admin panel + RBAC | ⏳ Хүлээгдэж буй |
 
 Дэлгэрэнгүй [docs/ROADMAP.md](docs/ROADMAP.md) дотор.
 
