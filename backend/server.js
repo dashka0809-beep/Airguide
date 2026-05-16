@@ -13,6 +13,8 @@
 import Fastify from 'fastify';
 import cors from '@fastify/cors';
 import rateLimit from '@fastify/rate-limit';
+import swagger from '@fastify/swagger';
+import swaggerUi from '@fastify/swagger-ui';
 import { config } from './src/config.js';
 import { checkDbHealth, closeDb } from './src/db.js';
 
@@ -71,6 +73,33 @@ await fastify.register(rateLimit, {
 // Auth decorator (fastify.authenticate, fastify.requireRole)
 await fastify.register(authPlugin);
 
+// OpenAPI spec + Swagger UI (/docs) — route-уудаас өмнө бүртгэнэ
+await fastify.register(swagger, {
+  openapi: {
+    info: {
+      title: 'Air Guide API',
+      description: 'Нислэгийн тийз захиалгын REST API',
+      version: '0.1.0'
+    },
+    servers: [{ url: '/' }],
+    tags: [
+      { name: 'public', description: 'Нээлттэй endpoint' },
+      { name: 'booking', description: 'Захиалга' },
+      { name: 'auth', description: 'Нэвтрэлт' },
+      { name: 'admin', description: 'Оператор (JWT шаардана)' }
+    ],
+    components: {
+      securitySchemes: {
+        bearerAuth: { type: 'http', scheme: 'bearer', bearerFormat: 'JWT' }
+      }
+    }
+  }
+});
+await fastify.register(swaggerUi, {
+  routePrefix: '/docs',
+  uiConfig: { docExpansion: 'list', deepLinking: true }
+});
+
 // ============================================================
 // Routes
 // ============================================================
@@ -90,7 +119,7 @@ fastify.get('/', async () => {
   return {
     name: 'Air Guide API',
     version: '0.1.0',
-    docs: config.isDevelopment ? '/docs' : null,
+    docs: '/docs',
     health: '/api/health',
     endpoints: [
       'GET  /api/airports?q=&limit=',
