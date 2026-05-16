@@ -21,6 +21,7 @@ const DEFAULT_LANG = 'mn';
 const dict = {
   mn: {
     'nav.search': 'Нислэг хайх',
+    'nav.lookup': 'Захиалга шалгах',
     'nav.schedule': 'Нислэгийн хуваарь',
     'nav.about': 'Бидний тухай',
     'nav.contact': 'Холбоо барих',
@@ -30,6 +31,7 @@ const dict = {
   },
   en: {
     'nav.search': 'Search flights',
+    'nav.lookup': 'Manage booking',
     'nav.schedule': 'Flight schedule',
     'nav.about': 'About us',
     'nav.contact': 'Contact',

@@ -9,6 +9,7 @@
  * ============================================================ */
 
 import { initSearchForm } from './search.js';
+import { openLookupModal } from './lookup.js';
 
 /**
  * FAQ item нээх/хаах
@@ -76,4 +77,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Search form (Phase 2)
   initSearchForm();
+
+  // Захиалга шалгах (nav линк + footer)
+  const lookupLink = document.querySelector('#nav-lookup');
+  if (lookupLink) {
+    lookupLink.addEventListener('click', (e) => {
+      e.preventDefault();
+      openLookupModal();
+    });
+  }
 });
