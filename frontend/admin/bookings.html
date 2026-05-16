@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="mn">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Air Guide — Захиалгууд</title>
+<link rel="stylesheet" href="css/admin.css" />
+</head>
+<body>
+<script type="module">
+import { requireAuth, renderShell, adminApi, fmtMNT, fmtDateTime, esc } from './js/core.js';
+
+const user = requireAuth();
+if (user) {
+  const canMutate = ['admin', 'manager'].includes(user.role);
+  const main = renderShell('bookings.html');
+  main.innerHTML = `
+    <div class="page-head"><h1>Захиалгууд</h1><p>Шүүх, цуцлах, буцаах</p></div>
+    <div class="filters">
+      <label>Төлөв
+        <select id="f-status">
+          <option value="">Бүгд</option>
+          <option value="pending">pending</option>
+          <option value="confirmed">confirmed</option>
+          <option value="cancelled">cancelled</option>
+          <option value="refunded">refunded</option>
+          <option value="completed">completed</option>
+        </select>
+      </label>
+      <label>Хайх (код/нэр/утас)
+        <input id="f-q" type="text" placeholder="AG... эсвэл нэр" />
+      </label>
+      <button class="btn" id="f-apply">Шүүх</button>
+    </div>
+    <div class="table-wrap" id="tbl"><div class="loading"><div class="spinner"></div>Ачаалж байна...</div></div>
+    <div class="pagination" id="pg"></div>
+  `;
+
+  let page = 1;
+  const state = { status: '', q: '' };
+
+  async function load() {
+    const tbl = document.getElementById('tbl');
+    tbl.innerHTML = '<div class="loading"><div class="spinner"></div>Ачаалж байна...</div>';
+    const qs = new URLSearchParams({ page, limit: 15 });
+    if (state.status) qs.set('status', state.status);
+    if (state.q) qs.set('q', state.q);
+    try {
+      const res = await adminApi(`/admin/bookings?${qs}`);
+      if (!res.data.length) {
+        tbl.innerHTML = '<div class="empty">Захиалга олдсонгүй</div>';
+        document.getElementById('pg').innerHTML = '';
+        return;
+      }
+      tbl.innerHTML = `
+        <table>
+          <thead><tr>
+            <th>Код</th><th>Үйлчлүүлэгч</th><th>Утас</th><th>Зорчигч</th>
+            <th>Төлөв</th><th>Нийт</th><th>Төлсөн</th><th>Огноо</th>
+            ${canMutate ? '<th>Үйлдэл</th>' : ''}
+          </tr></thead>
+          <tbody>
+          ${res.data.map(b => `
+            <tr>
+              <td><strong>${esc(b.booking_code)}</strong></td>
+              <td>${esc(b.customer_name)}</td>
+              <td>${esc(b.customer_phone)}</td>
+              <td>${b.total_passengers}</td>
+              <td><span class="badge b-${b.booking_status}">${esc(b.booking_status)}</span></td>
+              <td>${fmtMNT(b.total_amount)}</td>
+              <td>${fmtMNT(b.paid_amount)}</td>
+              <td>${fmtDateTime(b.booking_date)}</td>
+              ${canMutate ? `<td>${
+                ['pending','confirmed'].includes(b.booking_status)
+                  ? `<button class="btn-danger" data-cancel="${b.booking_id}">Цуцлах</button>
+                     <button class="btn-sm btn-ghost" data-refund="${b.booking_id}">Буцаах</button>`
+                  : '—'
+              }</td>` : ''}
+            </tr>`).join('')}
+          </tbody>
+        </table>`;
+
+      const pages = res.meta.pages || 1;
+      document.getElementById('pg').innerHTML = `
+        <button ${page<=1?'disabled':''} id="prev">← Өмнөх</button>
+        <span>Хуудас ${page} / ${pages} (нийт ${res.meta.total})</span>
+        <button ${page>=pages?'disabled':''} id="next">Дараах →</button>`;
+      document.getElementById('prev')?.addEventListener('click', () => { page--; load(); });
+      document.getElementById('next')?.addEventListener('click', () => { page++; load(); });
+
+      if (canMutate) {
+        tbl.querySelectorAll('[data-cancel]').forEach(b =>
+          b.addEventListener('click', () => act(b.dataset.cancel, 'cancel')));
+        tbl.querySelectorAll('[data-refund]').forEach(b =>
+          b.addEventListener('click', () => act(b.dataset.refund, 'refund')));
+      }
+    } catch (e) {
+      tbl.innerHTML = `<div class="empty">Алдаа: ${esc(e.message)}</div>`;
+    }
+  }
+
+  async function act(id, action) {
+    const verb = action === 'cancel' ? 'цуцлах' : 'буцаах (refund)';
+    if (!confirm(`Захиалга #${id}-г ${verb} уу? Буцаах боломжгүй.`)) return;
+    const reason = prompt('Шалтгаан (заавал биш):') || undefined;
+    try {
+      await adminApi(`/admin/bookings/${id}`, { method: 'PATCH', body: { action, reason } });
+      alert('Амжилттай');
+      load();
+    } catch (e) {
+      alert('Алдаа: ' + e.message);
+    }
+  }
+
+  document.getElementById('f-apply').addEventListener('click', () => {
+    state.status = document.getElementById('f-status').value;
+    state.q = document.getElementById('f-q').value.trim();
+    page = 1;
+    load();
+  });
+
+  load();
+}
+</script>
+</body>
+</html>

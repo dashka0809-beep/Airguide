@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="mn">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Air Guide — Нислэгүүд</title>
+<link rel="stylesheet" href="css/admin.css" />
+</head>
+<body>
+<script type="module">
+import { API_BASE, requireAuth, renderShell, adminApi, fmtMNT, fmtDateTime, esc } from './js/core.js';
+
+const user = requireAuth();
+if (user) {
+  const canMutate = ['admin', 'manager'].includes(user.role);
+  const main = renderShell('flights.html');
+  main.innerHTML = `
+    <div class="page-head" style="display:flex;justify-content:space-between;align-items:center">
+      <div><h1>Нислэгүүд</h1><p>Шүүх${canMutate ? ', нэмэх, засах' : ''}</p></div>
+      ${canMutate ? '<button class="btn" id="add-btn">+ Нислэг нэмэх</button>' : ''}
+    </div>
+    <div class="filters">
+      <label>Хаанаас (IATA)<input id="f-from" maxlength="3" placeholder="ULN" /></label>
+      <label>Хаашаа (IATA)<input id="f-to" maxlength="3" placeholder="ICN" /></label>
+      <label>Огноо<input id="f-date" type="date" /></label>
+      <label>Төлөв
+        <select id="f-status">
+          <option value="">Бүгд</option>
+          <option value="scheduled">scheduled</option>
+          <option value="delayed">delayed</option>
+          <option value="cancelled">cancelled</option>
+          <option value="departed">departed</option>
+          <option value="arrived">arrived</option>
+        </select>
+      </label>
+      <button class="btn" id="f-apply">Шүүх</button>
+    </div>
+    <div class="table-wrap" id="tbl"><div class="loading"><div class="spinner"></div>Ачаалж байна...</div></div>
+    <div class="pagination" id="pg"></div>
+    <div class="modal-bg" id="modal" hidden><div class="modal" id="modal-body"></div></div>
+  `;
+
+  let page = 1;
+  const state = { from: '', to: '', date: '', status: '' };
+  let airlines = [];
+
+  async function loadAirlines() {
+    if (airlines.length) return airlines;
+    const r = await fetch(`${API_BASE}/airlines`).then(r => r.json());
+    airlines = r.data || [];
+    return airlines;
+  }
+
+  // IATA → airport_id (autocomplete API ашиглана)
+  async function resolveAirport(iata) {
+    const r = await fetch(`${API_BASE}/airports?q=${encodeURIComponent(iata)}&limit=5`).then(r => r.json());
+    const hit = (r.data || []).find(a => a.iata_code.toUpperCase() === iata.toUpperCase());
+    return hit ? hit.airport_id : null;
+  }
+
+  async function load() {
+    const tbl = document.getElementById('tbl');
+    tbl.innerHTML = '<div class="loading"><div class="spinner"></div>Ачаалж байна...</div>';
+    const qs = new URLSearchParams({ page, limit: 15 });
+    if (state.from) qs.set('from', state.from);
+    if (state.to) qs.set('to', state.to);
+    if (state.date) qs.set('date', state.date);
+    if (state.status) qs.set('status', state.status);
+    try {
+      const res = await adminApi(`/admin/flights?${qs}`);
+      if (!res.data.length) {
+        tbl.innerHTML = '<div class="empty">Нислэг олдсонгүй</div>';
+        document.getElementById('pg').innerHTML = '';
+        return;
+      }
+      tbl.innerHTML = `
+        <table>
+          <thead><tr>
+            <th>Дугаар</th><th>Компани</th><th>Чиглэл</th><th>Хөөрөх</th>
+            <th>Суудал</th><th>Эконом</th><th>Төлөв</th>${canMutate ? '<th></th>' : ''}
+          </tr></thead>
+          <tbody>
+          ${res.data.map(f => `
+            <tr>
+              <td><strong>${esc(f.flight_number)}</strong></td>
+              <td>${esc(f.airline_code)}</td>
+              <td>${esc(f.origin_code)} → ${esc(f.dest_code)}</td>
+              <td>${fmtDateTime(f.departure_time)}</td>
+              <td>${f.available_seats}</td>
+              <td>${fmtMNT(f.economy_price)}</td>
+              <td><span class="badge b-${f.status === 'scheduled' ? 'scheduled' : (f.status === 'cancelled' ? 'cancelled' : 'pending')}">${esc(f.status)}</span></td>
+              ${canMutate ? `<td><button class="btn-sm btn-ghost" data-edit='${esc(JSON.stringify({id:f.flight_id,economy_price:f.economy_price,available_seats:f.available_seats,status:f.status}))}'>Засах</button></td>` : ''}
+            </tr>`).join('')}
+          </tbody>
+        </table>`;
+      const pages = res.meta.pages || 1;
+      document.getElementById('pg').innerHTML = `
+        <button ${page<=1?'disabled':''} id="prev">← Өмнөх</button>
+        <span>Хуудас ${page} / ${pages} (нийт ${res.meta.total})</span>
+        <button ${page>=pages?'disabled':''} id="next">Дараах →</button>`;
+      document.getElementById('prev')?.addEventListener('click', () => { page--; load(); });
+      document.getElementById('next')?.addEventListener('click', () => { page++; load(); });
+      if (canMutate) {
+        tbl.querySelectorAll('[data-edit]').forEach(b =>
+          b.addEventListener('click', () => openEdit(JSON.parse(b.dataset.edit))));
+      }
+    } catch (e) {
+      tbl.innerHTML = `<div class="empty">Алдаа: ${esc(e.message)}</div>`;
+    }
+  }
+
+  const modal = document.getElementById('modal');
+  const mbody = document.getElementById('modal-body');
+  function closeModal() { modal.hidden = true; mbody.innerHTML = ''; }
+  modal.addEventListener('click', e => { if (e.target === modal) closeModal(); });
+
+  async function openCreate() {
+    await loadAirlines();
+    mbody.innerHTML = `
+      <h2>Шинэ нислэг</h2>
+      <form id="cf">
+        <div class="grid2">
+          <label>Нислэгийн дугаар<input name="flight_number" required maxlength="10" placeholder="OM305" /></label>
+          <label>Компани
+            <select name="airline_id" required>
+              ${airlines.map(a => `<option value="${a.airline_id}">${esc(a.iata_code)} — ${esc(a.name)}</option>`).join('')}
+            </select>
+          </label>
+          <label>Хаанаас (IATA)<input name="from" required maxlength="3" placeholder="ULN" /></label>
+          <label>Хаашаа (IATA)<input name="to" required maxlength="3" placeholder="NRT" /></label>
+          <label>Хөөрөх (орон нутгийн цаг)<input name="dep" type="datetime-local" required /></label>
+          <label>Газардах<input name="arr" type="datetime-local" required /></label>
+          <label>Эконом үнэ (₮)<input name="economy_price" type="number" min="0" required /></label>
+          <label>Бизнес үнэ (₮)<input name="business_price" type="number" min="0" /></label>
+          <label>Суудал<input name="available_seats" type="number" min="0" required value="168" /></label>
+        </div>
+        <div id="cf-err" class="login-err" hidden></div>
+        <div class="modal-foot">
+          <button type="button" class="btn-ghost btn" id="cf-cancel">Болих</button>
+          <button type="submit" class="btn">Үүсгэх</button>
+        </div>
+      </form>`;
+    modal.hidden = false;
+    document.getElementById('cf-cancel').addEventListener('click', closeModal);
+    document.getElementById('cf').addEventListener('submit', submitCreate);
+  }
+
+  async function submitCreate(e) {
+    e.preventDefault();
+    const f = e.target;
+    const err = document.getElementById('cf-err');
+    err.hidden = true;
+    try {
+      const oid = await resolveAirport(f.from.value.trim());
+      const did = await resolveAirport(f.to.value.trim());
+      if (!oid || !did) throw new Error('IATA код буруу (буудал олдсонгүй)');
+      // datetime-local-г Ulaanbaatar (+08:00) гэж үзэж ISO болгоно
+      const depISO = `${f.dep.value}:00+08:00`;
+      const arrISO = `${f.arr.value}:00+08:00`;
+      const dur = Math.round((new Date(arrISO) - new Date(depISO)) / 60000);
+      if (dur <= 0) throw new Error('Газардах цаг хөөрөхөөс хойш байх ёстой');
+      const body = {
+        flight_number: f.flight_number.value.trim(),
+        airline_id: Number(f.airline_id.value),
+        origin_airport_id: oid,
+        destination_airport_id: did,
+        departure_time: depISO,
+        arrival_time: arrISO,
+        duration_minutes: dur,
+        economy_price: Number(f.economy_price.value),
+        business_price: f.business_price.value ? Number(f.business_price.value) : undefined,
+        available_seats: Number(f.available_seats.value),
+        status: 'scheduled'
+      };
+      await adminApi('/admin/flights', { method: 'POST', body });
+      closeModal();
+      alert('Нислэг үүслээ');
+      load();
+    } catch (ex) {
+      err.textContent = ex.message;
+      err.hidden = false;
+    }
+  }
+
+  function openEdit(f) {
+    mbody.innerHTML = `
+      <h2>Нислэг #${f.id} засах</h2>
+      <form id="ef">
+        <div class="grid2">
+          <label>Эконом үнэ (₮)<input name="economy_price" type="number" min="0" value="${f.economy_price}" /></label>
+          <label>Суудал<input name="available_seats" type="number" min="0" value="${f.available_seats}" /></label>
+          <label>Төлөв
+            <select name="status">
+              ${['scheduled','boarding','departed','arrived','cancelled','delayed']
+                .map(s => `<option value="${s}" ${s===f.status?'selected':''}>${s}</option>`).join('')}
+            </select>
+          </label>
+        </div>
+        <div id="ef-err" class="login-err" hidden></div>
+        <div class="modal-foot">
+          <button type="button" class="btn-ghost btn" id="ef-cancel">Болих</button>
+          <button type="submit" class="btn">Хадгалах</button>
+        </div>
+      </form>`;
+    modal.hidden = false;
+    document.getElementById('ef-cancel').addEventListener('click', closeModal);
+    document.getElementById('ef').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const ff = e.target;
+      const err = document.getElementById('ef-err');
+      try {
+        await adminApi(`/admin/flights/${f.id}`, { method: 'PATCH', body: {
+          economy_price: Number(ff.economy_price.value),
+          available_seats: Number(ff.available_seats.value),
+          status: ff.status.value
+        }});
+        closeModal();
+        alert('Хадгалагдлаа');
+        load();
+      } catch (ex) {
+        err.textContent = ex.message; err.hidden = false;
+      }
+    });
+  }
+
+  if (canMutate) document.getElementById('add-btn').addEventListener('click', openCreate);
+  document.getElementById('f-apply').addEventListener('click', () => {
+    state.from = document.getElementById('f-from').value.trim();
+    state.to = document.getElementById('f-to').value.trim();
+    state.date = document.getElementById('f-date').value;
+    state.status = document.getElementById('f-status').value;
+    page = 1; load();
+  });
+
+  load();
+}
+</script>
+</body>
+</html>

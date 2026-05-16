@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="mn">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Air Guide — Орлогын тайлан</title>
+<link rel="stylesheet" href="css/admin.css" />
+</head>
+<body>
+<script type="module">
+import { requireAuth, renderShell, adminApi, fmtMNT, esc } from './js/core.js';
+
+const user = requireAuth(['admin']);  // зөвхөн admin
+if (user) {
+  const main = renderShell('reports.html');
+  main.innerHTML = `
+    <div class="page-head"><h1>Орлогын тайлан</h1><p>Амжилттай төлбөрүүд</p></div>
+    <div class="filters">
+      <label>Сар (YYYY-MM)<input id="f-period" type="month" /></label>
+      <button class="btn" id="f-apply">Шүүх</button>
+      <button class="btn-ghost btn" id="f-clear">Бүгд</button>
+    </div>
+    <div id="content"><div class="loading"><div class="spinner"></div>Ачаалж байна...</div></div>
+  `;
+
+  function barChart(title, rows, labelKey, valKey) {
+    if (!rows.length) return '';
+    const max = Math.max(...rows.map(r => Number(r[valKey]))) || 1;
+    return `
+      <div class="kpi" style="margin-bottom:20px">
+        <div class="kpi-label" style="margin-bottom:14px;font-weight:700">${esc(title)}</div>
+        ${rows.map(r => `
+          <div class="bar-row">
+            <div class="bar-label">${esc(r[labelKey])}</div>
+            <div class="bar-track"><div class="bar-fill" style="width:${(Number(r[valKey])/max*100).toFixed(1)}%"></div></div>
+            <div class="bar-val">${fmtMNT(r[valKey])}</div>
+          </div>`).join('')}
+      </div>`;
+  }
+
+  async function load(period) {
+    const c = document.getElementById('content');
+    c.innerHTML = '<div class="loading"><div class="spinner"></div>Ачаалж байна...</div>';
+    try {
+      const qs = period ? `?period=${period}` : '';
+      const { data } = await adminApi(`/admin/reports/revenue${qs}`);
+      c.innerHTML = `
+        <div class="kpi-grid">
+          <div class="kpi">
+            <div class="kpi-label">Нийт орлого (${esc(data.period)})</div>
+            <div class="kpi-value">${fmtMNT(data.total_revenue)}</div>
+          </div>
+          <div class="kpi">
+            <div class="kpi-label">Төлбөрийн тоо</div>
+            <div class="kpi-value">${data.payment_count}</div>
+          </div>
+        </div>
+        ${barChart('Сар бүрийн орлого', data.by_month, 'month', 'revenue')}
+        ${barChart('Агаарын компаниар (ойролцоо)', data.by_airline, 'airline_name', 'revenue')}
+        <p style="color:var(--muted);font-size:12px;margin-top:8px">
+          ⚠️ "Агаарын компаниар" задаргаа нь нэг захиалга олон тийзтэй үед
+          давхар тоологдож болзошгүй (нийт дүн зөв).
+        </p>
+      `;
+    } catch (e) {
+      c.innerHTML = `<div class="empty">Алдаа: ${esc(e.message)}</div>`;
+    }
+  }
+
+  document.getElementById('f-apply').addEventListener('click', () => {
+    const p = document.getElementById('f-period').value;  // "2026-06"
+    load(p || null);
+  });
+  document.getElementById('f-clear').addEventListener('click', () => {
+    document.getElementById('f-period').value = '';
+    load(null);
+  });
+
+  load(null);
+}
+</script>
+</body>
+</html>

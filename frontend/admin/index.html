@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="mn">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Air Guide — Самбар</title>
+<link rel="stylesheet" href="css/admin.css" />
+</head>
+<body>
+<script type="module">
+import { requireAuth, renderShell, adminApi, fmtMNT, esc } from './js/core.js';
+
+const user = requireAuth();
+if (user) {
+  const main = renderShell('index.html');
+  main.innerHTML = `
+    <div class="page-head">
+      <h1>Самбар</h1>
+      <p>Тавтай морил, ${esc(user.full_name || user.username)} (${esc(user.role)})</p>
+    </div>
+    <div class="kpi-grid" id="kpis">
+      <div class="loading"><div class="spinner"></div>Ачаалж байна...</div>
+    </div>
+    <div class="page-head" style="margin-top:12px"><h1 style="font-size:18px">Сүүлийн захиалгууд</h1></div>
+    <div class="table-wrap" id="recent"></div>
+  `;
+
+  (async () => {
+    try {
+      const [bk, fl] = await Promise.all([
+        adminApi('/admin/bookings?limit=5'),
+        adminApi('/admin/flights?limit=1')
+      ]);
+
+      let revenueKpi = '';
+      if (user.role === 'admin') {
+        try {
+          const rev = await adminApi('/admin/reports/revenue');
+          revenueKpi = `
+            <div class="kpi">
+              <div class="kpi-label">Нийт орлого</div>
+              <div class="kpi-value">${fmtMNT(rev.data.total_revenue)}</div>
+              <div class="kpi-sub">${rev.data.payment_count} төлбөр</div>
+            </div>`;
+        } catch (_) {}
+      }
+
+      const pending = bk.data.filter(b => b.booking_status === 'pending').length;
+      document.getElementById('kpis').innerHTML = `
+        <div class="kpi">
+          <div class="kpi-label">Нийт захиалга</div>
+          <div class="kpi-value">${bk.meta.total}</div>
+          <div class="kpi-sub">${pending} төлбөр хүлээгдэж буй (сүүлийн 5-аас)</div>
+        </div>
+        <div class="kpi">
+          <div class="kpi-label">Нийт нислэг</div>
+          <div class="kpi-value">${fl.meta.total}</div>
+          <div class="kpi-sub">хуваарьт нислэг</div>
+        </div>
+        ${revenueKpi}
+      `;
+
+      document.getElementById('recent').innerHTML = bk.data.length ? `
+        <table>
+          <thead><tr><th>Код</th><th>Үйлчлүүлэгч</th><th>Төлөв</th><th>Дүн</th><th>Огноо</th></tr></thead>
+          <tbody>
+          ${bk.data.map(b => `
+            <tr>
+              <td><strong>${esc(b.booking_code)}</strong></td>
+              <td>${esc(b.customer_name)}</td>
+              <td><span class="badge b-${b.booking_status}">${esc(b.booking_status)}</span></td>
+              <td>${fmtMNT(b.total_amount)}</td>
+              <td>${new Date(b.booking_date).toLocaleDateString('mn-MN')}</td>
+            </tr>`).join('')}
+          </tbody>
+        </table>` : '<div class="empty">Захиалга алга</div>';
+    } catch (e) {
+      document.getElementById('kpis').innerHTML =
+        `<div class="empty">Алдаа: ${esc(e.message)}</div>`;
+    }
+  })();
+}
+</script>
+</body>
+</html>
