@@ -3,19 +3,22 @@
 -- =====================================================================
 -- Хэрэглэх:
 --   psql -U postgres -d airguide_db -f db/seed.sql
--- Эсвэл Railway-д:
---   railway run psql < db/seed.sql
+-- Эсвэл Python helper:
+--   python scripts/apply_db.py extensions schema seed verify
 --
--- ⚠️  Production-д энэ файлыг бүтнээр ачаалахгүй.
--- Зөвхөн airlines, airports л production-д хэрэгтэй —
--- тэдгээрийг тусдаа prod-seed.sql болгож болно.
+-- ⚠️  Энэ нь schema.sql-ийн ДАРАА ажиллана (schema нь DROP+CREATE хийдэг).
+-- Reference data (airlines, airports) ON CONFLICT-тэй тул дахин аюулгүй.
 --
--- Postgres-ийн ON CONFLICT идэвхжсэн тул дахин ажиллуулахад зөв.
+-- Flights нь generate_series-ээр 2026-05-20 ~ 2026-09-30 хооронд
+-- ӨДӨР БҮР олон чиглэлд автомат үүснэ (~3,200 нислэг).
+--
+-- paid_amount ЗАСВАР: bookings-г paid_amount=0-оор оруулж, payments
+-- (success) нь trigger-ээр paid_amount-ыг зөв тооцоолно. Ингэснээр
+-- давхар тооцолт (overcount) гарахгүй.
 -- =====================================================================
 
 -- =====================================================================
--- 1. USERS — Ажилтнууд
--- bcrypt hash жишээ (cost=12). Бодит value-уудыг production-д солих.
+-- 1. USERS — Ажилтнууд (bcrypt placeholder hash)
 -- =====================================================================
 INSERT INTO users (username, password_hash, full_name, email, phone, role) VALUES
   ('admin', '$2b$12$placeholder.admin.hash.replace.in.production.dev1', 'Бат-Эрдэнэ Дорж', 'admin@airguide.mn', '99001122', 'admin'),
@@ -25,7 +28,7 @@ ON CONFLICT (username) DO NOTHING;
 
 
 -- =====================================================================
--- 2. AIRLINES — Агаарын тээврийн компани
+-- 2. AIRLINES
 -- =====================================================================
 INSERT INTO airlines (iata_code, icao_code, name, country) VALUES
   ('OM', 'MGL', 'MIAT Mongolian Airlines',  'Mongolia'),
@@ -44,7 +47,7 @@ ON CONFLICT (iata_code) DO NOTHING;
 
 
 -- =====================================================================
--- 3. AIRPORTS — Нисэх буудал
+-- 3. AIRPORTS
 -- =====================================================================
 INSERT INTO airports (iata_code, icao_code, name, city, country, timezone, latitude, longitude) VALUES
   ('ULN', 'ZMCK', 'Chinggis Khaan International Airport',     'Ulaanbaatar',  'Mongolia',     'Asia/Ulaanbaatar', 47.6431,   106.8200),
@@ -71,7 +74,7 @@ ON CONFLICT (iata_code) DO NOTHING;
 
 
 -- =====================================================================
--- 4. AIRCRAFT — Онгоцууд (зөвхөн MIAT-ынх)
+-- 4. AIRCRAFT — MIAT fleet
 -- =====================================================================
 INSERT INTO aircraft (airline_id, model, registration_no, total_seats, economy_seats, business_seats, first_seats)
 SELECT
@@ -87,7 +90,7 @@ ON CONFLICT (registration_no) DO NOTHING;
 
 
 -- =====================================================================
--- 5. CUSTOMERS — Жишээ үйлчлүүлэгчид
+-- 5. CUSTOMERS
 -- =====================================================================
 INSERT INTO customers (last_name, first_name, register_no, passport_no, birth_date, gender, email, phone) VALUES
   ('Дашдорж',   'Энхтөр',     'УА90080912', 'MN1234567', '1990-08-09', 'M', 'dashka@example.com', '99887766'),
@@ -97,144 +100,161 @@ ON CONFLICT (register_no) DO NOTHING;
 
 
 -- =====================================================================
--- 6. FLIGHTS — Жишээ нислэгүүд (айлгын ID-уудыг dynamic-аар авна)
+-- 6. FLIGHTS — generate_series-ээр өдөр тутмын хуваарь
+--    2026-05-20 ~ 2026-09-30, өдөр бүр (24 чиглэл × 134 өдөр)
 -- =====================================================================
 INSERT INTO flights (flight_number, airline_id, origin_airport_id, destination_airport_id,
                      departure_time, arrival_time, duration_minutes,
                      economy_price, business_price, available_seats, status)
 SELECT
-  vals.flight_number,
-  (SELECT airline_id FROM airlines  WHERE iata_code = vals.airline_iata),
-  (SELECT airport_id FROM airports  WHERE iata_code = vals.origin_iata),
-  (SELECT airport_id FROM airports  WHERE iata_code = vals.dest_iata),
-  vals.departure_time::timestamptz,
-  vals.arrival_time::timestamptz,
-  vals.duration_minutes,
-  vals.economy_price,
-  vals.business_price,
-  vals.available_seats,
-  vals.status
-FROM (VALUES
-  ('OM301', 'OM', 'ULN', 'ICN', '2026-06-15 01:30:00+00', '2026-06-15 06:00:00+00', 210, 890000.00,  1890000.00, 120, 'scheduled'),
-  ('OM302', 'OM', 'ICN', 'ULN', '2026-06-22 08:00:00+00', '2026-06-22 11:30:00+00', 210, 890000.00,  1890000.00, 118, 'scheduled'),
-  ('OM501', 'OM', 'ULN', 'PEK', '2026-06-16 03:00:00+00', '2026-06-16 05:30:00+00', 150, 750000.00,  1450000.00, 150, 'scheduled'),
-  ('OM601', 'OM', 'ULN', 'FRA', '2026-07-01 14:00:00+00', '2026-07-01 21:30:00+00', 450, 2890000.00, 5800000.00, 200, 'scheduled'),
-  ('KE868', 'KE', 'ULN', 'ICN', '2026-06-16 03:00:00+00', '2026-06-16 07:30:00+00', 210, 950000.00,  2200000.00, 200, 'scheduled'),
-  ('OZ370', 'OZ', 'ICN', 'ULN', '2026-06-23 09:00:00+00', '2026-06-23 12:30:00+00', 210, 990000.00,  2300000.00, 180, 'scheduled'),
-  ('TK023', 'TK', 'ULN', 'IST', '2026-07-01 14:00:00+00', '2026-07-01 22:30:00+00', 510, 1890000.00, 4500000.00, 250, 'scheduled'),
-  ('CA738', 'CA', 'ULN', 'PEK', '2026-06-17 02:00:00+00', '2026-06-17 04:30:00+00', 150, 720000.00,  1380000.00, 180, 'scheduled'),
-  ('M0901', 'M0', 'ULN', 'HET', '2026-06-18 06:00:00+00', '2026-06-18 07:30:00+00',  90, 480000.00,         NULL,  70, 'scheduled'),
-  ('MR225', 'MR', 'ULN', 'HVD', '2026-06-19 02:30:00+00', '2026-06-19 05:00:00+00', 150, 320000.00,         NULL,  50, 'scheduled')
-) AS vals(flight_number, airline_iata, origin_iata, dest_iata, departure_time, arrival_time, duration_minutes, economy_price, business_price, available_seats, status);
+  r.flight_number,
+  (SELECT airline_id FROM airlines WHERE iata_code = r.airline_iata),
+  (SELECT airport_id FROM airports WHERE iata_code = r.origin),
+  (SELECT airport_id FROM airports WHERE iata_code = r.dest),
+  (gs.day + r.dep_offset)::timestamptz,
+  (gs.day + r.dep_offset + (r.duration_min || ' minutes')::interval)::timestamptz,
+  r.duration_min,
+  r.economy_price,
+  r.business_price,
+  r.seats,
+  'scheduled'
+FROM (
+  VALUES
+  -- flight_no, airline, from,  to,    dep_offset(UTC), duration_min, econ,      business,   seats
+    ('OM301', 'OM', 'ULN', 'ICN', interval '01:30', 210,  890000.00, 1890000.00, 168),
+    ('OM302', 'OM', 'ICN', 'ULN', interval '08:00', 210,  890000.00, 1890000.00, 168),
+    ('KE868', 'KE', 'ULN', 'ICN', interval '03:00', 210,  950000.00, 2200000.00, 200),
+    ('KE867', 'KE', 'ICN', 'ULN', interval '10:00', 210,  950000.00, 2200000.00, 200),
+    ('OZ370', 'OZ', 'ULN', 'ICN', interval '05:30', 215,  920000.00, 2100000.00, 180),
+    ('OM501', 'OM', 'ULN', 'PEK', interval '03:00', 150,  750000.00, 1450000.00, 168),
+    ('OM502', 'OM', 'PEK', 'ULN', interval '07:00', 150,  750000.00, 1450000.00, 168),
+    ('CA738', 'CA', 'ULN', 'PEK', interval '02:00', 150,  720000.00, 1380000.00, 180),
+    ('OM701', 'OM', 'ULN', 'NRT', interval '00:30', 270, 1350000.00, 2900000.00, 220),
+    ('OM702', 'OM', 'NRT', 'ULN', interval '06:30', 270, 1350000.00, 2900000.00, 220),
+    ('JL722', 'JL', 'ULN', 'NRT', interval '04:00', 270, 1420000.00, 3100000.00, 200),
+    ('NH936', 'NH', 'ULN', 'HND', interval '02:30', 275, 1480000.00, 3200000.00, 210),
+    ('TK023', 'TK', 'ULN', 'IST', interval '14:00', 510, 1890000.00, 4500000.00, 250),
+    ('TK024', 'TK', 'IST', 'ULN', interval '20:00', 510, 1890000.00, 4500000.00, 250),
+    ('OM601', 'OM', 'ULN', 'FRA', interval '14:00', 450, 2890000.00, 5800000.00, 220),
+    ('OM801', 'OM', 'ULN', 'BKK', interval '01:00', 360, 1250000.00, 2700000.00, 200),
+    ('OM802', 'OM', 'BKK', 'ULN', interval '09:00', 360, 1250000.00, 2700000.00, 200),
+    ('OM901', 'OM', 'ULN', 'HKG', interval '02:00', 300, 1180000.00, 2500000.00, 190),
+    ('OM110', 'OM', 'ULN', 'SIN', interval '00:30', 420, 1650000.00, 3500000.00, 210),
+    ('SU331', 'SU', 'ULN', 'SVO', interval '06:00', 390, 1550000.00, 3300000.00, 230),
+    ('OM205', 'OM', 'ULN', 'DXB', interval '03:30', 480, 1980000.00, 4200000.00, 220),
+    ('M0901', 'M0', 'ULN', 'HET', interval '06:00',  90,  480000.00,       NULL,  70),
+    ('MR225', 'MR', 'ULN', 'HVD', interval '02:30', 150,  320000.00,       NULL,  50),
+    ('MR318', 'MR', 'ULN', 'MXV', interval '04:00', 105,  290000.00,       NULL,  50)
+) AS r(flight_number, airline_iata, origin, dest, dep_offset, duration_min, economy_price, business_price, seats)
+CROSS JOIN generate_series(
+  TIMESTAMPTZ '2026-05-20 00:00:00+00',
+  TIMESTAMPTZ '2026-09-30 00:00:00+00',
+  INTERVAL '1 day'
+) AS gs(day);
 
 
 -- =====================================================================
--- 7. BOOKINGS — Жишээ захиалга
+-- 7. BOOKINGS — paid_amount=0 (payments trigger-ээр тооцоологдоно)
 -- =====================================================================
 INSERT INTO bookings (booking_code, customer_id, created_by, trip_type,
                       total_passengers, total_amount, paid_amount, status, metadata)
 SELECT
-  vals.booking_code,
-  (SELECT customer_id FROM customers WHERE register_no = vals.cust_reg),
-  (SELECT user_id FROM users         WHERE username    = vals.agent_user),
-  vals.trip_type,
-  vals.total_passengers,
-  vals.total_amount,
-  vals.paid_amount,
-  vals.status,
-  vals.metadata::jsonb
+  v.booking_code,
+  (SELECT customer_id FROM customers WHERE register_no = v.cust_reg),
+  (SELECT user_id FROM users WHERE username = v.agent_user),
+  v.trip_type,
+  v.total_passengers,
+  v.total_amount,
+  0,
+  v.status,
+  v.metadata::jsonb
 FROM (VALUES
-  ('AG7X9P2', 'УА90080912', 'saraa', 'round_trip', 1, 1780000.00, 1780000.00, 'confirmed', '{"source":"website","campaign":"summer2026"}'),
-  ('AG3K2M8', 'УБ85050415', 'saraa', 'one_way',    2, 1900000.00,  950000.00, 'pending',   '{"source":"call_center"}')
-) AS vals(booking_code, cust_reg, agent_user, trip_type, total_passengers, total_amount, paid_amount, status, metadata)
+  ('AG7X9P2', 'УА90080912', 'saraa', 'round_trip', 1, 1780000.00, 'pending', '{"source":"website","campaign":"summer2026"}'),
+  ('AG3K2M8', 'УБ85050415', 'saraa', 'one_way',    2, 1900000.00, 'pending', '{"source":"call_center"}')
+) AS v(booking_code, cust_reg, agent_user, trip_type, total_passengers, total_amount, status, metadata)
 ON CONFLICT (booking_code) DO NOTHING;
 
 
 -- =====================================================================
--- 8. PASSENGERS — Захиалга доторх зорчигч
+-- 8. PASSENGERS
 -- =====================================================================
 INSERT INTO passengers (booking_id, last_name, first_name, passport_no, passport_expiry,
                         birth_date, gender, passenger_type, seat_number)
 SELECT
-  (SELECT booking_id FROM bookings WHERE booking_code = vals.bk_code),
-  vals.last_name, vals.first_name, vals.passport_no, vals.passport_expiry::date,
-  vals.birth_date::date, vals.gender, vals.passenger_type, vals.seat_number
+  (SELECT booking_id FROM bookings WHERE booking_code = v.bk_code),
+  v.last_name, v.first_name, v.passport_no, v.passport_expiry::date,
+  v.birth_date::date, v.gender, v.passenger_type, v.seat_number
 FROM (VALUES
   ('AG7X9P2', 'Дашдорж',   'Энхтөр',    'MN1234567', '2030-08-09', '1990-08-09', 'M', 'adult', '14A'),
   ('AG3K2M8', 'Батсайхан', 'Оюунчимэг', 'MN2345678', '2028-05-04', '1985-05-04', 'F', 'adult', '22C'),
   ('AG3K2M8', 'Батсайхан', 'Номин',     'MN3456789', '2029-11-12', '2015-11-12', 'F', 'child', '22D')
-) AS vals(bk_code, last_name, first_name, passport_no, passport_expiry, birth_date, gender, passenger_type, seat_number);
+) AS v(bk_code, last_name, first_name, passport_no, passport_expiry, birth_date, gender, passenger_type, seat_number)
+WHERE EXISTS (SELECT 1 FROM bookings WHERE booking_code = v.bk_code)
+  AND NOT EXISTS (
+    SELECT 1 FROM passengers p
+    WHERE p.booking_id = (SELECT booking_id FROM bookings WHERE booking_code = v.bk_code)
+      AND p.first_name = v.first_name
+  );
 
 
 -- =====================================================================
--- 9. TICKETS — Билет (issued status — trigger автомат suudal -1 хийнэ)
+-- 9. TICKETS — нэг тодорхой нислэгт холбоно (эхний таарах нислэг)
+--    trigger автомат available_seats -1 хийнэ
 -- =====================================================================
 INSERT INTO tickets (ticket_number, booking_id, passenger_id, flight_id, class_type, price)
 SELECT
-  vals.ticket_number,
-  (SELECT booking_id FROM bookings WHERE booking_code = vals.bk_code),
+  v.ticket_number,
+  (SELECT booking_id FROM bookings WHERE booking_code = v.bk_code),
   p.passenger_id,
-  (SELECT flight_id FROM flights WHERE flight_number = vals.flight_num),
-  vals.class_type,
-  vals.price
+  (SELECT flight_id FROM flights
+     WHERE flight_number = v.flight_num
+     ORDER BY departure_time LIMIT 1),
+  v.class_type,
+  v.price
 FROM (VALUES
-  ('OM-2026-0001', 'AG7X9P2', 'Энхтөр',    'OM301', 'economy',  890000.00),
-  ('OM-2026-0002', 'AG7X9P2', 'Энхтөр',    'OM302', 'economy',  890000.00),
-  ('KE-2026-0001', 'AG3K2M8', 'Оюунчимэг', 'KE868', 'economy',  950000.00),
-  ('KE-2026-0002', 'AG3K2M8', 'Номин',     'KE868', 'economy',  950000.00)
-) AS vals(ticket_number, bk_code, passenger_first_name, flight_num, class_type, price)
+  ('OM-2026-9001', 'AG7X9P2', 'Энхтөр',    'OM301', 'economy',  890000.00),
+  ('OM-2026-9002', 'AG7X9P2', 'Энхтөр',    'OM302', 'economy',  890000.00),
+  ('KE-2026-9001', 'AG3K2M8', 'Оюунчимэг', 'KE868', 'economy',  950000.00),
+  ('KE-2026-9002', 'AG3K2M8', 'Номин',     'KE868', 'economy',  950000.00)
+) AS v(ticket_number, bk_code, passenger_first_name, flight_num, class_type, price)
 JOIN passengers p
-  ON p.first_name = vals.passenger_first_name
- AND p.booking_id = (SELECT booking_id FROM bookings WHERE booking_code = vals.bk_code)
+  ON p.first_name = v.passenger_first_name
+ AND p.booking_id = (SELECT booking_id FROM bookings WHERE booking_code = v.bk_code)
+WHERE EXISTS (SELECT 1 FROM bookings WHERE booking_code = v.bk_code)
 ON CONFLICT (ticket_number) DO NOTHING;
 
 
 -- =====================================================================
--- 10. PAYMENTS — Төлбөр (success status — trigger paid_amount шинэчилнэ)
--- ⚠️  Гэхдээ бид аль хэдийн bookings.paid_amount-ыг бичсэн тул
---     дахин trigger-ээр өсгөгдөхгүйн тулд status='pending' оруулна,
---     эсвэл шууд алдаа гарах болно.
---     Тиймээс энэ seed нь "одоо паид" status-той гүйлгээний түүх л.
---     Bookings.paid_amount-ыг хэрэв 0 байсан бол л trigger ажиллуулна.
+-- 10. PAYMENTS — success status → trigger paid_amount-ыг ЗӨВ тооцоолно
+--     AG7X9P2: бүтэн төлсөн (1,780,000)
+--     AG3K2M8: хагас төлсөн (950,000 / 1,900,000)
 -- =====================================================================
 INSERT INTO payments (booking_id, amount, payment_method, transaction_no, status, received_by, paid_at)
 SELECT
-  (SELECT booking_id FROM bookings WHERE booking_code = vals.bk_code),
-  vals.amount,
-  vals.payment_method,
-  vals.transaction_no,
-  vals.status,
-  (SELECT user_id FROM users WHERE username = vals.received_username),
-  vals.paid_at::timestamptz
+  (SELECT booking_id FROM bookings WHERE booking_code = v.bk_code),
+  v.amount, v.payment_method, v.transaction_no, v.status,
+  (SELECT user_id FROM users WHERE username = v.received_username),
+  v.paid_at::timestamptz
 FROM (VALUES
   ('AG7X9P2', 1780000.00, 'card',          'TXN20260510001', 'success', 'saraa', '2026-05-10 09:15:00+00'),
   ('AG3K2M8',  950000.00, 'bank_transfer', 'TXN20260510002', 'success', 'saraa', '2026-05-10 14:22:00+00')
-) AS vals(bk_code, amount, payment_method, transaction_no, status, received_username, paid_at);
+) AS v(bk_code, amount, payment_method, transaction_no, status, received_username, paid_at)
+WHERE EXISTS (SELECT 1 FROM bookings WHERE booking_code = v.bk_code)
+  AND NOT EXISTS (
+    SELECT 1 FROM payments pm
+    WHERE pm.transaction_no = v.transaction_no
+  );
 
 
 -- =====================================================================
--- ШАЛГАХ — Sample data зөв ачаалагдсан эсэх
+-- ШАЛГАХ
 -- =====================================================================
--- SELECT 'users'      AS table, COUNT(*) FROM users
--- UNION ALL SELECT 'customers',  COUNT(*) FROM customers
--- UNION ALL SELECT 'airlines',   COUNT(*) FROM airlines
--- UNION ALL SELECT 'airports',   COUNT(*) FROM airports
--- UNION ALL SELECT 'aircraft',   COUNT(*) FROM aircraft
--- UNION ALL SELECT 'flights',    COUNT(*) FROM flights
--- UNION ALL SELECT 'bookings',   COUNT(*) FROM bookings
--- UNION ALL SELECT 'passengers', COUNT(*) FROM passengers
--- UNION ALL SELECT 'tickets',    COUNT(*) FROM tickets
--- UNION ALL SELECT 'payments',   COUNT(*) FROM payments;
+-- SELECT 'flights' AS t, COUNT(*) FROM flights
+-- UNION ALL SELECT 'bookings', COUNT(*) FROM bookings;
 --
--- Хүлээгдэх үр дүн:
---   users:      3
---   customers:  3
---   airlines:   12
---   airports:   20
---   aircraft:   4
---   flights:    10
---   bookings:   2
---   passengers: 3
---   tickets:    4
---   payments:   2
+-- -- paid_amount зөв эсэх (overcount байхгүй):
+-- SELECT booking_code, total_amount, paid_amount, status FROM bookings;
+-- -- Хүлээгдэх:
+-- --   AG7X9P2  1780000  1780000  confirmed   (бүтэн → confirmed)
+-- --   AG3K2M8  1900000   950000  pending     (хагас)
 -- =====================================================================
