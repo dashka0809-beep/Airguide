@@ -1,5 +1,7 @@
 # Air Guide
 
+[![CI](https://github.com/dashka0809-beep/Airguide/actions/workflows/ci.yml/badge.svg)](https://github.com/dashka0809-beep/Airguide/actions/workflows/ci.yml)
+
 > Нислэгийн тийз захиалгын хөнгөн, хурдан вэб систем.
 
 Air Guide бол Монголын нислэгийн тийзний агентлагт зориулсан захиалга, төлбөр, удирдлагын платформ юм. Систем нь **хамгийн бага хамаарал**, **build step байхгүй frontend**, **нэг жижиг VPS дээр ажиллах** зарчмаар бүтээгдсэн.
@@ -24,10 +26,20 @@ Air Guide бол Монголын нислэгийн тийзний агентл
 | Үйлчилгээ | URL |
 |---|---|
 | **Вэбсайт** | https://airguide-frontend-production.up.railway.app/ |
+| **Admin panel** | https://airguide-frontend-production.up.railway.app/admin/login.html |
 | **API** | https://airguide-production-ec87.up.railway.app/api/health |
+| **API docs (Swagger)** | https://airguide-production-ec87.up.railway.app/docs |
 
-Хэрэглэгчийн аялал: **хайх → захиалах (3 алхам) → шалгах → цуцлах** бүрэн ажиллана.
-20 чиглэл, 3,200+ нислэг (2026-05-20 ~ 09-30).
+Хэрэглэгчийн аялал: **хайх → шүүх → захиалах (3 алхам) → шалгах → цуцлах**,
+MN/EN хэлээр. 20 чиглэл, 3,200+ нислэг (2026-05-20 ~ 09-30).
+
+**Admin dev нэвтрэлт** (зөвхөн demo — production-д солих):
+
+| Хэрэглэгч | Нууц үг | Эрх |
+|---|---|---|
+| `admin` | `Admin@123` | Бүх (орлогын тайлан) |
+| `munkh` | `Manager@123` | Захиалга/нислэг засах |
+| `saraa` | `Agent@123` | Зөвхөн харах |
 
 ---
 
@@ -108,17 +120,35 @@ node server.js             # http://localhost:3000 ($PORT-г уншина)
 
 | Phase | Хэсэг | Төлөв |
 |---|---|---|
-| 0 | Foundation (repo, docs, бүтэц) | ✅ Дууссан |
-| 1 | Database (MySQL→Postgres, 11 хүснэгт) | ✅ Дууссан |
-| 1 | Backend API (7 public endpoint) | ✅ Дууссан |
-| 2 | Frontend — хайлт + autocomplete | ✅ Дууссан |
-| 2 | Захиалгын flow (3-алхамт modal) | ✅ Дууссан |
-| 2 | Захиалга шалгах / цуцлах | ✅ Дууссан |
-| 2 | Filter / эрэмбэлэлт | ✅ Дууссан |
-| 2 | MN/EN i18n (бүрэн) | ⏳ Хэсэгчилсэн |
-| 5 | Railway deploy (live) | ✅ Дууссан |
-| 3 | Төлбөр (QPay) + e-ticket email | ⏳ Дараагийнх |
-| 4 | Admin panel + RBAC | ⏳ Хүлээгдэж буй |
+| **0** | Foundation (repo, docs, бүтэц) | ✅ 100% |
+| **1** | DB (MySQL→Postgres, 11 хүснэгт, 14 trigger) | ✅ 100% |
+| **1** | Backend API (13 endpoint), node:test, Swagger, CI | ✅ 100% |
+| **2** | Frontend — хайлт, autocomplete, filter/эрэмбэ | ✅ 100% |
+| **2** | Захиалгын flow (3-алхамт modal), шалгах/цуцлах | ✅ 100% |
+| **2** | MN/EN i18n (статик chrome) | ✅ 100% |
+| **4** | Admin panel + JWT + RBAC + audit_log | ✅ 100% |
+| **5** | Railway deploy (frontend+API+DB live) | ✅ ~50% |
+| **3** | Төлбөр (QPay) + e-ticket email | ⏳ Дараагийнх |
+| **5** | Custom domain (airguide.mn), Sentry, UptimeRobot | ⏳ Үлдсэн |
+
+**Нийт ~80%.** Phase 0/1/2/4 бүрэн. Phase 3, 5-д гадны бүртгэл
+(QPay sandbox, domain) шаардлагатай.
+
+### Endpoint-ууд (live)
+
+```
+Public   GET  /api/airports?q=        GET /api/airlines
+         GET  /api/flights/search     GET /api/flights/:id
+Booking  POST /api/bookings           GET /api/bookings/:code
+         POST /api/bookings/:code/cancel
+Auth     POST /api/auth/login         POST /api/auth/refresh
+         POST /api/auth/logout        GET  /api/auth/me
+Admin    GET  /api/admin/bookings     PATCH /api/admin/bookings/:id
+         GET  /api/admin/flights      POST  /api/admin/flights
+         PATCH /api/admin/flights/:id GET  /api/admin/reports/revenue
+```
+
+Бүрэн интерактив: [/docs](https://airguide-production-ec87.up.railway.app/docs) (Swagger UI).
 
 Дэлгэрэнгүй [docs/ROADMAP.md](docs/ROADMAP.md) дотор.
 
