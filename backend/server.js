@@ -16,6 +16,8 @@ import rateLimit from '@fastify/rate-limit';
 import swagger from '@fastify/swagger';
 import swaggerUi from '@fastify/swagger-ui';
 import { config } from './src/config.js';
+// Sentry-г аль болох эрт ачаална (DSN байвал init хийнэ, үгүй бол no-op)
+import { captureException, sentryEnabled } from './src/sentry.js';
 import { checkDbHealth, closeDb } from './src/db.js';
 
 // Plugins
@@ -58,12 +60,20 @@ const fastify = Fastify({
 // Plugins
 // ============================================================
 
-// CORS — Frontend-ийн origin-аас л зөвшөөрнө
+// CORS — Frontend-ийн origin-аас л зөвшөөрнө (allowlist)
 await fastify.register(cors, {
   origin: config.cors.origin,
   credentials: false,
   methods: ['GET', 'POST', 'PATCH', 'PUT', 'DELETE', 'OPTIONS']
 });
+if (config.cors.locked) {
+  fastify.log.info({ origin: config.cors.origin }, 'CORS locked to allowlist');
+} else {
+  fastify.log.warn(
+    'CORS нээлттэй (FRONTEND_ORIGIN=*). Production-д frontend ' +
+    'URL болгож тохируулна уу.'
+  );
+}
 
 // Rate limit — anti-DDoS / brute-force
 await fastify.register(rateLimit, {
@@ -186,8 +196,13 @@ fastify.setErrorHandler((err, req, reply) => {
     });
   }
 
-  // Default
+  // Default — 5xx бол Sentry-руу илгээнэ (DSN байвал)
   const status = err.statusCode ?? 500;
+  if (status >= 500) {
+    captureException(err, {
+      method: req.method, url: req.url, ip: req.ip
+    });
+  }
   reply.code(status).send({
     error: {
       code: status === 500 ? 'INTERNAL_ERROR' : (err.code ?? 'UNKNOWN'),
@@ -216,6 +231,9 @@ process.on('SIGTERM', () => closeGracefully('SIGTERM'));
 // ============================================================
 try {
   await fastify.listen({ port: config.port, host: '0.0.0.0' });
+  fastify.log.info(
+    `Sentry: ${sentryEnabled ? 'enabled' : 'disabled (no SENTRY_DSN)'}`
+  );
 } catch (err) {
   fastify.log.error(err);
   process.exit(1);

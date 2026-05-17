@@ -21,6 +21,7 @@
     "@fastify/rate-limit": "^9.1.0",
     "@fastify/swagger": "^8.14.0",
     "@fastify/swagger-ui": "^4.0.0",
+    "@sentry/node": "^8.0.0",
     "bcrypt": "^5.1.1",
     "fastify": "^4.28.0",
     "fastify-plugin": "^4.5.1",

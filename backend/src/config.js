@@ -78,9 +78,15 @@ export const config = {
     bcryptCost: parsed.BCRYPT_COST
   },
 
-  cors: {
-    origin: parsed.FRONTEND_ORIGIN
-  },
+  cors: (() => {
+    const raw = parsed.FRONTEND_ORIGIN.trim();
+    if (raw === '*') {
+      return { origin: '*', locked: false };
+    }
+    // Таслалаар тусгаарласан allowlist дэмжинэ
+    const list = raw.split(',').map(s => s.trim()).filter(Boolean);
+    return { origin: list.length === 1 ? list[0] : list, locked: true };
+  })(),
 
   qpay: {
     baseUrl: parsed.QPAY_BASE_URL,
@@ -95,7 +101,8 @@ export const config = {
   },
 
   sentry: {
-    dsn: parsed.SENTRY_DSN
+    dsn: parsed.SENTRY_DSN,
+    enabled: Boolean(parsed.SENTRY_DSN)
   },
 
   chat: {
