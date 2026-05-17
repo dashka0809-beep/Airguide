@@ -44,7 +44,9 @@ const envSchema = z.object({
 
   // AI chatbot (Phase 6) — байхгүй бол /api/chat 503 буцаана
   ANTHROPIC_API_KEY: z.string().optional(),
-  CHAT_MODEL: z.string().default('claude-haiku-4-5')
+  // Sonnet 4.6 — bilingual + tool orchestration-д найдвартай.
+  // CHAT_MODEL=claude-haiku-4-5 -ээр хямд болгож болно (tool use сулрана).
+  CHAT_MODEL: z.string().default('claude-sonnet-4-6')
 });
 
 let parsed;
