@@ -79,13 +79,17 @@ export const config = {
   },
 
   cors: (() => {
-    const raw = parsed.FRONTEND_ORIGIN.trim();
-    if (raw === '*') {
+    // Таслал ЭСВЭЛ зайгаар тусгаарласан утгуудыг хүлээж авна.
+    // ("* https://site" гэх мэт буруу оролтыг ч цэгцэлнэ.)
+    const tokens = parsed.FRONTEND_ORIGIN
+      .split(/[\s,]+/).map(s => s.trim()).filter(Boolean);
+    const origins = tokens.filter(t => t !== '*');
+    if (origins.length === 0) {
+      // Зөвхөн '*' (эсвэл хоосон) → бүгдэд нээлттэй
       return { origin: '*', locked: false };
     }
-    // Таслалаар тусгаарласан allowlist дэмжинэ
-    const list = raw.split(',').map(s => s.trim()).filter(Boolean);
-    return { origin: list.length === 1 ? list[0] : list, locked: true };
+    // Тодорхой origin байвал '*'-ыг хаяж зөвхөн allowlist үлдээнэ
+    return { origin: origins.length === 1 ? origins[0] : origins, locked: true };
   })(),
 
   qpay: {
