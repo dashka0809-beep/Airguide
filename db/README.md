@@ -57,16 +57,43 @@ psql -U postgres -d airguide_db -c "\dv"  # view-үүд
 
 ---
 
-## Migration хийх (dbmate-р)
+## Migration хийх
 
+`db/migrations/` нь **dbmate-нийцтэй** формат (`-- migrate:up` /
+`-- migrate:down`). Applied version-ууд `schema_migrations` хүснэгтэд
+бүртгэгдэнэ. `schema.sql` нь fresh setup-ийн нэг файлт reference;
+**өөрчлөлт бүр шинэ migration файлаар** ороход source of truth болно.
+
+### Одоогийн migration-ууд
+| Version | Файл | Тайлбар |
+|---|---|---|
+| `20260517120000` | `init.sql` | Анхны schema baseline (extensions + 11 хүснэгт + 2 view + 4 trigger fn) |
+| `20260517120100` | `add_bookings_created_by_index.sql` | `bookings.created_by` FK index |
+
+Production DB нь init-ээс өмнө apply хийгдсэн тул init-ийг **baseline**
+(run-гүй бүртгэх)-ээр оруулсан.
+
+### A. Python helper (Node/dbmate binary шаардахгүй)
 ```bash
-# Шинэ migration үүсгэх
-dbmate new add_seats_table
-# → db/migrations/20260520120000_add_seats_table.sql
-
-dbmate status     # pending migrations
-dbmate up         # apply
-dbmate rollback   # буцаах
+export DATABASE_URL="postgresql://user:pass@host:port/db"
+python scripts/apply_db.py migrate-status          # төлөв
+python scripts/apply_db.py migrate                  # бүх pending apply
+# Одоо байгаа DB-д init-г baseline, бусдыг apply:
+python scripts/apply_db.py migrate --baseline 20260517120000
 ```
+Apply нь transaction дотор ажиллана; алдаа гарвал rollback + зогсоно.
+
+### B. dbmate binary (Railway дээр Node бий)
+```bash
+cd backend
+npm run db:migrate     # = dbmate up (package.json script)
+dbmate new <name>      # шинэ migration файл үүсгэх
+dbmate status / rollback
+```
+
+### Шинэ migration нэмэх
+1. `db/migrations/<YYYYMMDDHHMMSS>_<name>.sql` файл үүсгэ
+2. `-- migrate:up` ба `-- migrate:down` хэсэгтэй бич
+3. `python scripts/apply_db.py migrate` (эсвэл `dbmate up`)
 
 [`docs/DATABASE.md#10-migration-дүрэм`](../docs/DATABASE.md#10-migration-дүрэм-dbmate) -г үзнэ үү.

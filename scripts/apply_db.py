@@ -41,6 +41,10 @@ FILES = {
     "seed":       DB_DIR / "seed.sql",
 }
 
+MIGRATIONS_DIR = DB_DIR / "migrations"
+# dbmate-н default: schema_migrations(version varchar primary key)
+MIGRATIONS_TABLE = "schema_migrations"
+
 
 def parse_db_url(url: str) -> dict:
     """postgresql://user:pass@host:port/dbname → dict for pg8000.connect()"""
@@ -208,14 +212,132 @@ def verify(conn: pg8000.native.Connection):
 
 
 # ----------------------------------------------------------------------------
+# Migrations (dbmate-compatible)
+# ----------------------------------------------------------------------------
+def ensure_migrations_table(conn):
+    conn.run(
+        f"CREATE TABLE IF NOT EXISTS {MIGRATIONS_TABLE} "
+        f"(version VARCHAR(255) PRIMARY KEY)"
+    )
+
+
+def applied_versions(conn) -> set:
+    rows = conn.run(f"SELECT version FROM {MIGRATIONS_TABLE}")
+    return {r[0] for r in rows}
+
+
+def list_migrations() -> list[tuple[str, Path]]:
+    """[(version, path), ...] нэрийн дараалалд."""
+    if not MIGRATIONS_DIR.exists():
+        return []
+    out = []
+    for p in sorted(MIGRATIONS_DIR.glob("*.sql")):
+        m = re.match(r"^(\d+)", p.name)
+        if m:
+            out.append((m.group(1), p))
+    return out
+
+
+def parse_up_sql(path: Path) -> str:
+    """dbmate файлаас '-- migrate:up' ... '-- migrate:down' хэсгийг авна."""
+    text = path.read_text(encoding="utf-8")
+    lines = text.split("\n")
+    up, capture = [], False
+    for ln in lines:
+        s = ln.strip()
+        if s.startswith("-- migrate:up"):
+            capture = True
+            continue
+        if s.startswith("-- migrate:down"):
+            break
+        if capture:
+            up.append(ln)
+    return "\n".join(up)
+
+
+def cmd_migrate_status(conn):
+    ensure_migrations_table(conn)
+    done = applied_versions(conn)
+    migs = list_migrations()
+    print(f"\n🗂️  Migrations ({len(migs)} total):")
+    for ver, path in migs:
+        mark = "✅ applied" if ver in done else "⬜ pending"
+        print(f"   [{mark}] {path.name}")
+    pending = [v for v, _ in migs if v not in done]
+    print(f"\n   {len(pending)} pending, {len(done)} applied.")
+
+
+def cmd_migrate(conn, baseline=None):
+    """
+    baseline=None         → бүх pending-г бодитоор apply
+    baseline=True         → бүх pending-г run-гүй зөвхөн бүртгэх
+    baseline='<version>'  → version <= тэр утга бол run-гүй бүртгэх,
+                            бусдыг бодитоор apply (одоо байгаа DB-д init-г
+                            baseline хийгээд шинэ migration-уудыг apply)
+    """
+    ensure_migrations_table(conn)
+    done = applied_versions(conn)
+    migs = list_migrations()
+    pending = [(v, p) for v, p in migs if v not in done]
+
+    if not pending:
+        print("✅ Бүх migration applied — хийх зүйл алга.")
+        return 0
+
+    print(f"\n🚀 MIGRATE — {len(pending)} pending migration\n")
+
+    failed = 0
+    for ver, path in pending:
+        is_baseline = (baseline is True) or (
+            isinstance(baseline, str) and ver <= baseline
+        )
+        print(f"📦 {path.name}")
+        if is_baseline:
+            conn.run(
+                f"INSERT INTO {MIGRATIONS_TABLE}(version) VALUES (:v) "
+                f"ON CONFLICT DO NOTHING", v=ver
+            )
+            print(f"   ↳ baseline-аар бүртгэв (up ажиллуулаагүй)")
+            continue
+
+        up_sql = parse_up_sql(path)
+        stmts = split_sql_statements(up_sql)
+        try:
+            conn.run("BEGIN")
+            for stmt in stmts:
+                conn.run(stmt)
+            conn.run(
+                f"INSERT INTO {MIGRATIONS_TABLE}(version) VALUES (:v)", v=ver
+            )
+            conn.run("COMMIT")
+            print(f"   ✓ {len(stmts)} statement applied + бүртгэв")
+        except Exception as e:
+            try:
+                conn.run("ROLLBACK")
+            except Exception:
+                pass
+            failed += 1
+            print(f"   ✗ FAILED: {e}")
+            print("   (transaction rollback — энэ migration бүртгэгдээгүй)")
+            break  # дараалал чухал тул зогсооно
+    return failed
+
+
+# ----------------------------------------------------------------------------
 # Main
 # ----------------------------------------------------------------------------
 def main():
     parser = argparse.ArgumentParser(description="Apply DB files to Postgres.")
     parser.add_argument("steps", nargs="+",
-                        choices=["extensions", "schema", "seed", "verify"],
-                        help="Аль файлуудыг хэрхэн дэс дараалалд ажиллуулах вэ?")
+                        choices=["extensions", "schema", "seed", "verify",
+                                 "migrate", "migrate-status"],
+                        help="Алхмууд: extensions/schema/seed/verify эсвэл "
+                             "migrate (pending migration apply) / migrate-status")
     parser.add_argument("--url", help="Postgres URL (env DATABASE_URL-аас уншна)")
+    parser.add_argument("--baseline", nargs="?", const=True, default=None,
+                        help="migrate-тэй: утгагүй бол бүх pending-г run-гүй "
+                             "бүртгэх; version өгвөл түүн хүртэлхийг л baseline, "
+                             "бусдыг бодитоор apply (ж: --baseline 20260517120000)")
     args = parser.parse_args()
 
     url = args.url or os.environ.get("DATABASE_URL")
@@ -239,6 +361,10 @@ def main():
         for step in args.steps:
             if step == "verify":
                 verify(conn)
+            elif step == "migrate-status":
+                cmd_migrate_status(conn)
+            elif step == "migrate":
+                total_fail += cmd_migrate(conn, baseline=args.baseline)
             else:
                 _, fail = apply_file(conn, FILES[step])
                 total_fail += fail
