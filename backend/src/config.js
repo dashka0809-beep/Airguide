@@ -40,7 +40,11 @@ const envSchema = z.object({
   EMAIL_FROM: z.string().email().optional(),
 
   // Monitoring (optional)
-  SENTRY_DSN: z.string().optional()
+  SENTRY_DSN: z.string().optional(),
+
+  // AI chatbot (Phase 6) — байхгүй бол /api/chat 503 буцаана
+  ANTHROPIC_API_KEY: z.string().optional(),
+  CHAT_MODEL: z.string().default('claude-haiku-4-5')
 });
 
 let parsed;
@@ -90,5 +94,11 @@ export const config = {
 
   sentry: {
     dsn: parsed.SENTRY_DSN
+  },
+
+  chat: {
+    apiKey: parsed.ANTHROPIC_API_KEY,
+    model: parsed.CHAT_MODEL,
+    enabled: Boolean(parsed.ANTHROPIC_API_KEY)
   }
 };

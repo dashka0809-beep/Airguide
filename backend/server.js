@@ -33,6 +33,9 @@ import adminBookingRoutes from './src/routes/admin/bookings.js';
 import adminFlightRoutes from './src/routes/admin/flights.js';
 import adminReportRoutes from './src/routes/admin/reports.js';
 
+// Phase 6 routes
+import chatRoutes from './src/routes/chat.js';
+
 // ============================================================
 // Fastify instance
 // ============================================================
@@ -137,7 +140,9 @@ fastify.get('/', async () => {
       'GET  /api/admin/flights',
       'POST /api/admin/flights',
       'PATCH /api/admin/flights/:id',
-      'GET  /api/admin/reports/revenue'
+      'GET  /api/admin/reports/revenue',
+      'POST /api/chat',
+      'GET  /api/chat/health'
     ]
   };
 });
@@ -153,6 +158,9 @@ await fastify.register(authRoutes, { prefix: '/api' });
 await fastify.register(adminBookingRoutes, { prefix: '/api/admin' });
 await fastify.register(adminFlightRoutes,  { prefix: '/api/admin' });
 await fastify.register(adminReportRoutes,  { prefix: '/api/admin' });
+
+// Phase 6 route bundles
+await fastify.register(chatRoutes, { prefix: '/api' });
 
 // ============================================================
 // Error handler

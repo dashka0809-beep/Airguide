@@ -10,6 +10,7 @@
 
 import { initSearchForm } from './search.js';
 import { openLookupModal } from './lookup.js';
+import { initChatbot } from './chatbot.js';
 
 /**
  * FAQ item нээх/хаах
@@ -86,4 +87,7 @@ document.addEventListener('DOMContentLoaded', () => {
       openLookupModal();
     });
   }
+
+  // AI туслах (хөвөгч widget)
+  initChatbot();
 });
