@@ -115,6 +115,57 @@ await fastify.register(swaggerUi, {
 });
 
 // ============================================================
+// Error handler — route-уудаас ӨМНӨ бүртгэнэ. Fastify-д тусгай
+// errorHandler нь зөвхөн дараа нь бүртгэгдсэн route-уудад
+// хэрэгждэг (encapsulation). Өмнө нь байсан тул route бүр Fastify-н
+// анхдагч 500 руу унаж байсныг энд зассан.
+// ============================================================
+fastify.setErrorHandler((err, req, reply) => {
+  fastify.log.error(err);
+
+  // Zod validation errors — instanceof, .name, эсвэл бүтцээр (issues
+  // массив) илрүүлнэ. Хоёр Zod хувилбар зэрэгцэх / модуль realm зөрөх
+  // үед instanceof ба .name найдваргүй болдог тул бүтцийн шалгалт нэмэв.
+  const zodIssues = Array.isArray(err?.issues) ? err.issues
+                  : Array.isArray(err?.errors) ? err.errors
+                  : null;
+  if (err instanceof ZodError || err?.name === 'ZodError'
+      || (zodIssues && err instanceof Error)) {
+    const issues = zodIssues ?? [];
+    return reply.code(400).send({
+      error: {
+        code: 'VALIDATION_ERROR',
+        message: issues[0]?.message ?? 'Invalid input',
+        details: issues
+      }
+    });
+  }
+
+  // Rate limit
+  if (err.statusCode === 429) {
+    return reply.code(429).send({
+      error: { code: 'RATE_LIMITED', message: 'Too many requests' }
+    });
+  }
+
+  // Default — 5xx бол Sentry-руу илгээнэ (DSN байвал)
+  const status = err.statusCode ?? 500;
+  if (status >= 500) {
+    captureException(err, {
+      method: req.method, url: req.url, ip: req.ip
+    });
+  }
+  reply.code(status).send({
+    error: {
+      code: status === 500 ? 'INTERNAL_ERROR' : (err.code ?? 'UNKNOWN'),
+      message: config.isProduction && status === 500
+        ? 'Internal server error'
+        : err.message
+    }
+  });
+});
+
+// ============================================================
 // Routes
 // ============================================================
 
@@ -172,54 +223,6 @@ await fastify.register(adminReportRoutes,  { prefix: '/api/admin' });
 
 // Phase 6 route bundles
 await fastify.register(chatRoutes, { prefix: '/api' });
-
-// ============================================================
-// Error handler
-// ============================================================
-fastify.setErrorHandler((err, req, reply) => {
-  fastify.log.error(err);
-
-  // Zod validation errors — instanceof, .name, эсвэл бүтцээр (issues
-  // массив) илрүүлнэ. Хоёр Zod хувилбар зэрэгцэх / модуль realm зөрөх
-  // үед instanceof ба .name найдваргүй болдог тул бүтцийн шалгалт нэмэв.
-  const zodIssues = Array.isArray(err?.issues) ? err.issues
-                  : Array.isArray(err?.errors) ? err.errors
-                  : null;
-  if (err instanceof ZodError || err?.name === 'ZodError'
-      || (zodIssues && err instanceof Error)) {
-    const issues = zodIssues ?? [];
-    return reply.code(400).send({
-      error: {
-        code: 'VALIDATION_ERROR',
-        message: issues[0]?.message ?? 'Invalid input',
-        details: issues
-      }
-    });
-  }
-
-  // Rate limit
-  if (err.statusCode === 429) {
-    return reply.code(429).send({
-      error: { code: 'RATE_LIMITED', message: 'Too many requests' }
-    });
-  }
-
-  // Default — 5xx бол Sentry-руу илгээнэ (DSN байвал)
-  const status = err.statusCode ?? 500;
-  if (status >= 500) {
-    captureException(err, {
-      method: req.method, url: req.url, ip: req.ip
-    });
-  }
-  reply.code(status).send({
-    error: {
-      code: status === 500 ? 'INTERNAL_ERROR' : (err.code ?? 'UNKNOWN'),
-      message: config.isProduction && status === 500
-        ? 'Internal server error'
-        : err.message
-    }
-  });
-});
 
 // ============================================================
 // Graceful shutdown
