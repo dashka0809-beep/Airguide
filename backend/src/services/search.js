@@ -7,8 +7,45 @@
 
 import { query } from '../db.js';
 
-/** Нисэх буудал хайх (trigram + ILIKE), дээд тал нь 6 */
+/**
+ * Монгол (Кирилл) хот → DB-н Англи нэр/IATA. Загвар андуурахаас
+ * сэргийлэх deterministic давхарга. Жижиг үсгээр харьцуулна.
+ */
+const MN_CITY_ALIAS = {
+  'улаанбаатар': 'ULN', 'уб': 'ULN', 'ulaanbaatar': 'ULN',
+  'сөүл': 'ICN', 'соул': 'ICN', 'сеул': 'ICN', 'seoul': 'ICN',
+  'бээжин': 'PEK', 'пекин': 'PEK', 'beijing': 'PEK',
+  'токио': 'NRT', 'токьё': 'NRT', 'tokyo': 'NRT',
+  'бангкок': 'BKK', 'банкок': 'BKK', 'bangkok': 'BKK',
+  'гонконг': 'HKG', 'хонконг': 'HKG', 'hong kong': 'HKG',
+  'стамбул': 'IST', 'истанбул': 'IST', 'istanbul': 'IST',
+  'франкфурт': 'FRA', 'frankfurt': 'FRA',
+  'дубай': 'DXB', 'dubai': 'DXB',
+  'сингапур': 'SIN', 'singapore': 'SIN',
+  'москва': 'SVO', 'moscow': 'SVO',
+  'ховд': 'HVD', 'khovd': 'HVD',
+  'мөрөн': 'MXV', 'мурэн': 'MXV', 'murun': 'MXV',
+  'хөххот': 'HET', 'хөх хот': 'HET', 'hohhot': 'HET',
+  'астана': 'AST', 'astana': 'AST'
+};
+
+/** Нисэх буудал хайх. Кирилл/Монгол нэрийг эхлээд alias-аар шийднэ. */
 export async function searchAirports(q) {
+  const norm = String(q || '').trim().toLowerCase();
+  const aliasCode = MN_CITY_ALIAS[norm];
+  if (aliasCode) {
+    // Alias олдвол IATA-аар нь шууд буудлуудыг буцаана
+    const { rows } = await query(
+      `SELECT iata_code, city, country, name FROM airports
+       WHERE iata_code = $1`,
+      [aliasCode]
+    );
+    if (rows.length) {
+      return rows.map(r => ({
+        iata: r.iata_code, city: r.city, country: r.country, name: r.name
+      }));
+    }
+  }
   const { rows } = await query(
     `
     SELECT iata_code, city, country, name
