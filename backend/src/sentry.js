@@ -29,7 +29,16 @@ if (config.sentry.enabled) {
     try {
       Sentry.captureMessage('[boot] Airguide Sentry connectivity test', 'info');
       const flushed = await Sentry.flush(5000);
-      console.log(`[sentry] init OK — boot test flushed: ${flushed}`);
+      console.log(`[sentry] init OK — message boot test flushed: ${flushed}`);
+
+      // Жинхэнэ алдаа барих замыг (captureException) ч шалгана —
+      // үр дүн нь deploy log дээр харагдана.
+      Sentry.captureException(
+        new Error('[boot] Airguide Sentry error-path test'),
+        { contexts: { request: { boot: true } } }
+      );
+      const flushedErr = await Sentry.flush(5000);
+      console.log(`[sentry] error-path boot test flushed: ${flushedErr}`);
     } catch (e) {
       console.error('[sentry] boot test failed:', e);
     }
@@ -45,14 +54,12 @@ export const sentryEnabled = Boolean(Sentry);
 export function captureException(err, context) {
   if (!Sentry) return;
   try {
-    if (context) {
-      Sentry.withScope((scope) => {
-        scope.setContext('request', context);
-        Sentry.captureException(err);
-      });
-    } else {
-      Sentry.captureException(err);
-    }
+    // withScope-гүйгээр ШУУД дуудна — boot-д ажилласан captureMessage-тэй
+    // ижил энгийн зам. Контекстийг hint-ээр дамжуулна.
+    Sentry.captureException(
+      err,
+      context ? { contexts: { request: context } } : undefined
+    );
     // Урт хугацааны серверт ч албадан флаш хийж, илгээлтийг
     // баталгаажуулна (fire-and-forget — үндсэн ажлыг блоклохгүй).
     Sentry.flush(2000)
