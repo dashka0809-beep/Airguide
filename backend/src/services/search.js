@@ -11,7 +11,7 @@ import { query } from '../db.js';
  * Монгол (Кирилл) хот → DB-н Англи нэр/IATA. Загвар андуурахаас
  * сэргийлэх deterministic давхарга. Жижиг үсгээр харьцуулна.
  */
-const MN_CITY_ALIAS = {
+export const MN_CITY_ALIAS = {
   'улаанбаатар': 'ULN', 'уб': 'ULN', 'ulaanbaatar': 'ULN',
   'сөүл': 'ICN', 'соул': 'ICN', 'сеул': 'ICN', 'seoul': 'ICN',
   'бээжин': 'PEK', 'пекин': 'PEK', 'beijing': 'PEK',

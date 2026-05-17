@@ -9,10 +9,15 @@
 
 import { query } from '../db.js';
 import { airportSearchQuerySchema } from '../schemas/airport.js';
+import { MN_CITY_ALIAS } from '../services/search.js';
 
 export default async function airportRoutes(fastify) {
   fastify.get('/airports', async (req, reply) => {
     const { q, limit } = airportSearchQuerySchema.parse(req.query);
+
+    // Монгол/Кирилл хотын нэрийг IATA болгож хөрвүүлнэ (chat-тай ижил
+    // alias). Ингэснээр "улаанбаатар" → "ULN" болж доорх SQL таарна.
+    const term = MN_CITY_ALIAS[String(q).trim().toLowerCase()] ?? q;
 
     // Rank: exact iata > iata prefix > city prefix > city substring > similarity
     // Trigram threshold 0.15 болгож "ulan" → "Ulaanbaatar" (sim 0.21) ч таарна
@@ -39,7 +44,7 @@ export default async function airportRoutes(fastify) {
       ORDER BY rank DESC, city ASC
       LIMIT $2
       `,
-      [q, limit]
+      [term, limit]
     );
 
     // Хариунд rank-г оруулахгүй (дотоод хэрэглээ)

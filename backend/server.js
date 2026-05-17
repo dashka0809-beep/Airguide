@@ -15,6 +15,7 @@ import cors from '@fastify/cors';
 import rateLimit from '@fastify/rate-limit';
 import swagger from '@fastify/swagger';
 import swaggerUi from '@fastify/swagger-ui';
+import { ZodError } from 'zod';
 import { config } from './src/config.js';
 // Sentry-г аль болох эрт ачаална (DSN байвал init хийнэ, үгүй бол no-op)
 import { captureException, sentryEnabled } from './src/sentry.js';
@@ -178,13 +179,20 @@ await fastify.register(chatRoutes, { prefix: '/api' });
 fastify.setErrorHandler((err, req, reply) => {
   fastify.log.error(err);
 
-  // Zod validation errors
-  if (err.name === 'ZodError') {
+  // Zod validation errors — instanceof, .name, эсвэл бүтцээр (issues
+  // массив) илрүүлнэ. Хоёр Zod хувилбар зэрэгцэх / модуль realm зөрөх
+  // үед instanceof ба .name найдваргүй болдог тул бүтцийн шалгалт нэмэв.
+  const zodIssues = Array.isArray(err?.issues) ? err.issues
+                  : Array.isArray(err?.errors) ? err.errors
+                  : null;
+  if (err instanceof ZodError || err?.name === 'ZodError'
+      || (zodIssues && err instanceof Error)) {
+    const issues = zodIssues ?? [];
     return reply.code(400).send({
       error: {
         code: 'VALIDATION_ERROR',
-        message: err.errors[0]?.message ?? 'Invalid input',
-        details: err.errors
+        message: issues[0]?.message ?? 'Invalid input',
+        details: issues
       }
     });
   }
