@@ -8,6 +8,8 @@
  * ОГТ хүрэхгүй. Нэвтрэх эрхгүй бол route нь 503 буцаана.
  */
 
+import { config } from '../config.js';
+
 /**
  * Travelport CatalogProductOfferings хариуг манай товч хэлбэрт хөрвүүлнэ.
  * ЦЭВЭР функц — сүлжээ хөндөхгүй, алдаа шиднэхгүй (дутуу/буруу → []/null).
@@ -57,4 +59,118 @@ export function mapOffersToCompact(api) {
       currency:     price?.CurrencyCode?.value ?? null
     };
   });
+}
+
+// ============================================================
+// OAuth + сүлжээ (Task 4) — contract: travelport-api-notes.md
+// ============================================================
+
+class TravelportError extends Error {
+  constructor(code, message) { super(message); this.code = code; }
+}
+
+let _token = null; // { value, expiresAt }
+
+async function getAccessToken() {
+  if (_token && Date.now() < _token.expiresAt - 30_000) return _token.value;
+
+  // grant_type=password — Travelport two-legged OAuth (api-notes-д тэмдэглэв;
+  // Task 8-д auth амжилтгүй бол энд тулгаж засна).
+  const body = new URLSearchParams({
+    grant_type:    'password',
+    username:      config.travelport.username,
+    password:      config.travelport.password,
+    client_id:     config.travelport.clientId,
+    client_secret: config.travelport.clientSecret
+  });
+
+  let res;
+  try {
+    res = await fetch(config.travelport.oauthUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+        'Accept': 'application/json'
+      },
+      body,
+      signal: AbortSignal.timeout(15_000)
+    });
+  } catch (e) {
+    throw new TravelportError('TRAVELPORT_AUTH_FAILED', `OAuth network error: ${e.message}`);
+  }
+  if (!res.ok) {
+    throw new TravelportError('TRAVELPORT_AUTH_FAILED', `OAuth HTTP ${res.status}`);
+  }
+  let j;
+  try { j = await res.json(); }
+  catch { throw new TravelportError('TRAVELPORT_AUTH_FAILED', 'OAuth: invalid JSON'); }
+  if (!j?.access_token) {
+    throw new TravelportError('TRAVELPORT_AUTH_FAILED', 'OAuth: no access_token');
+  }
+  const ttlSec = Number(j.expires_in ?? 86_400);
+  _token = { value: j.access_token, expiresAt: Date.now() + ttlSec * 1000 };
+  return _token.value;
+}
+
+/** Зөвхөн тест/дотоод: token cache цэвэрлэх. */
+export const _resetTokenForTests = () => { _token = null; };
+
+/**
+ * Travelport sandbox-аас нислэг хайх (нэг чиглэл, economy, 1 том).
+ * @param {{from:string,to:string,departureDate:string}} p IATA, IATA, YYYY-MM-DD
+ * @returns {Promise<Array>} compact results (mapOffersToCompact)
+ */
+export async function searchFlights({ from, to, departureDate }) {
+  const token = await getAccessToken();
+
+  const url = `${config.travelport.baseUrl.replace(/\/+$/, '')}/catalog/search/catalogproductofferings`;
+  const reqBody = {
+    CatalogProductOfferingsQueryRequest: {
+      '@type': 'CatalogProductOfferingsQueryRequest',
+      CatalogProductOfferingsRequest: {
+        '@type': 'CatalogProductOfferingsRequestAir',
+        PassengerCriteria: [
+          { '@type': 'PassengerCriteria', passengerTypeCode: 'ADT', number: 1 }
+        ],
+        SearchCriteriaFlight: [
+          { '@type': 'SearchCriteriaFlight', departureDate,
+            From: { value: from }, To: { value: to } }
+        ],
+        SearchModifiersAir: {
+          '@type': 'SearchModifiersAir',
+          CabinPreference: [
+            { '@type': 'CabinPreference', preferenceType: 'Permitted', cabins: ['Economy'] }
+          ]
+        }
+      }
+    }
+  };
+
+  let res;
+  try {
+    res = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+        'Accept-Encoding': 'gzip, deflate',
+        'Cache-Control': 'no-cache',
+        'Accept-Version': '11',
+        'Content-Version': '11',
+        'XAUTH_TRAVELPORT_ACCESSGROUP': config.travelport.pcc
+      },
+      body: JSON.stringify(reqBody),
+      signal: AbortSignal.timeout(30_000)
+    });
+  } catch (e) {
+    throw new TravelportError('TRAVELPORT_UPSTREAM', `Search network error: ${e.message}`);
+  }
+  if (!res.ok) {
+    throw new TravelportError('TRAVELPORT_UPSTREAM', `Search HTTP ${res.status}`);
+  }
+  let json;
+  try { json = await res.json(); }
+  catch { throw new TravelportError('TRAVELPORT_UPSTREAM', 'Search: invalid JSON'); }
+  return mapOffersToCompact(json);
 }
