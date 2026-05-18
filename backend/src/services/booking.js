@@ -176,33 +176,55 @@ export async function createBooking(input, createdBy = null) {
     //    илүү ухаалаг болгох (нэр+утас, регистр)
     // -------------------------------------------------------
     const c = input.customer;
+    const cEmail = (c.email || '').trim();
     let customerId;
+
+    // customers.email нь UNIQUE. Имэйл нь ӨӨР хэрэглэгчид бүртгэлтэй бол
+    // түүнийг бичвэл DB 23505 (unique_violation) → 500 болдог байсан.
+    // Тиймээс урьдчилан шалгаж, давхцвал имэйлийг алгасаад захиалгыг
+    // ХЭВИЙН үргэлжлүүлнэ (имэйл бол хоёрдогч мэдээлэл).
+    async function emailFree(exceptId) {
+      if (!cEmail) return false;
+      const { rows } = await client.query(
+        `SELECT 1 FROM customers
+          WHERE email = $1 AND ($2::bigint IS NULL OR customer_id <> $2)
+          LIMIT 1`,
+        [cEmail, exceptId ?? null]
+      );
+      return rows.length === 0;
+    }
+
     const { rows: existing } = await client.query(
       `SELECT customer_id FROM customers WHERE phone = $1 ORDER BY customer_id LIMIT 1`,
       [c.phone]
     );
     if (existing.length > 0) {
       customerId = existing[0].customer_id;
-      // Шинэ мэдээллээр баяжуул
-      await client.query(
-        `
-        UPDATE customers
-           SET last_name  = $1,
-               first_name = $2,
-               email      = COALESCE(NULLIF($3, ''), email),
-               updated_at = NOW()
-         WHERE customer_id = $4
-        `,
-        [c.last_name, c.first_name, c.email || '', customerId]
-      );
+      // Нэрийг үргэлж шинэчилнэ; имэйлийг зөвхөн чөлөөтэй бол (мөргөлдөөнгүй).
+      if (await emailFree(customerId)) {
+        await client.query(
+          `UPDATE customers
+              SET last_name = $1, first_name = $2, email = $3, updated_at = NOW()
+            WHERE customer_id = $4`,
+          [c.last_name, c.first_name, cEmail, customerId]
+        );
+      } else {
+        await client.query(
+          `UPDATE customers
+              SET last_name = $1, first_name = $2, updated_at = NOW()
+            WHERE customer_id = $3`,
+          [c.last_name, c.first_name, customerId]
+        );
+      }
     } else {
+      const useEmail = await emailFree(null);
       const { rows: inserted } = await client.query(
         `
         INSERT INTO customers (last_name, first_name, phone, email)
         VALUES ($1, $2, $3, NULLIF($4, ''))
         RETURNING customer_id
         `,
-        [c.last_name, c.first_name, c.phone, c.email || '']
+        [c.last_name, c.first_name, c.phone, useEmail ? cEmail : '']
       );
       customerId = inserted[0].customer_id;
     }
