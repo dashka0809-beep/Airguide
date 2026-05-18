@@ -1,0 +1,65 @@
+{
+  "CatalogProductOfferingsResponse": {
+    "CatalogProductOfferings": {
+      "CatalogProductOffering": [
+        {
+          "id": "o1",
+          "Departure": "ULN",
+          "Arrival": "ICN",
+          "ProductBrandOptions": [
+            {
+              "flightRefs": ["f1"],
+              "ProductBrandOffering": [
+                {
+                  "BestCombinablePrice": {
+                    "TotalPrice": 890000,
+                    "CurrencyCode": { "value": "MNT" }
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "o2",
+          "Departure": "ULN",
+          "Arrival": "ICN",
+          "ProductBrandOptions": [
+            {
+              "flightRefs": ["f2"],
+              "ProductBrandOffering": [
+                {
+                  "BestCombinablePrice": {
+                    "TotalPrice": 950000,
+                    "CurrencyCode": { "value": "MNT" }
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "ReferenceList": [
+      {
+        "@type": "ReferenceListFlight",
+        "Flight": [
+          {
+            "id": "f1",
+            "carrier": "OM",
+            "number": "301",
+            "Departure": { "location": "ULN", "date": "2026-07-01", "time": "09:30:00" },
+            "Arrival":   { "location": "ICN", "date": "2026-07-01", "time": "13:00:00" }
+          },
+          {
+            "id": "f2",
+            "carrier": "KE",
+            "number": "868",
+            "Departure": { "location": "ULN", "date": "2026-07-01", "time": "14:10:00" },
+            "Arrival":   { "location": "ICN", "date": "2026-07-01", "time": "17:40:00" }
+          }
+        ]
+      }
+    ]
+  }
+}
