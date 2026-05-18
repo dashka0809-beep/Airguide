@@ -46,7 +46,18 @@ const envSchema = z.object({
   ANTHROPIC_API_KEY: z.string().optional(),
   // Sonnet 4.6 — bilingual + tool orchestration-д найдвартай.
   // CHAT_MODEL=claude-haiku-4-5 -ээр хямд болгож болно (tool use сулрана).
-  CHAT_MODEL: z.string().default('claude-sonnet-4-6')
+  CHAT_MODEL: z.string().default('claude-sonnet-4-6'),
+
+  // Travelport (sandbox прототайп) — optional. Бүгд байхгүй бол
+  // /api/travelport/* нь 503 буцаана (chat/sentry-тэй ижил graceful).
+  TRAVELPORT_OAUTH_URL: z.string().url().optional(),
+  TRAVELPORT_BASE_URL: z.string().url().optional(),
+  TRAVELPORT_CLIENT_ID: z.string().optional(),
+  TRAVELPORT_CLIENT_SECRET: z.string().optional(),
+  TRAVELPORT_USERNAME: z.string().optional(),
+  TRAVELPORT_PASSWORD: z.string().optional(),
+  TRAVELPORT_PCC: z.string().optional(),
+  TRAVELPORT_ENV: z.enum(['sandbox', 'production']).default('sandbox')
 });
 
 let parsed;
@@ -113,5 +124,25 @@ export const config = {
     apiKey: parsed.ANTHROPIC_API_KEY,
     model: parsed.CHAT_MODEL,
     enabled: Boolean(parsed.ANTHROPIC_API_KEY)
-  }
+  },
+
+  travelport: (() => {
+    const req = [
+      parsed.TRAVELPORT_OAUTH_URL, parsed.TRAVELPORT_BASE_URL,
+      parsed.TRAVELPORT_CLIENT_ID, parsed.TRAVELPORT_CLIENT_SECRET,
+      parsed.TRAVELPORT_USERNAME, parsed.TRAVELPORT_PASSWORD,
+      parsed.TRAVELPORT_PCC
+    ];
+    return {
+      enabled: req.every(v => typeof v === 'string' && v.length > 0),
+      env:          parsed.TRAVELPORT_ENV,
+      oauthUrl:     parsed.TRAVELPORT_OAUTH_URL,
+      baseUrl:      parsed.TRAVELPORT_BASE_URL,
+      clientId:     parsed.TRAVELPORT_CLIENT_ID,
+      clientSecret: parsed.TRAVELPORT_CLIENT_SECRET,
+      username:     parsed.TRAVELPORT_USERNAME,
+      password:     parsed.TRAVELPORT_PASSWORD,
+      pcc:          parsed.TRAVELPORT_PCC
+    };
+  })()
 };
