@@ -39,6 +39,9 @@ import adminReportRoutes from './src/routes/admin/reports.js';
 // Phase 6 routes
 import chatRoutes from './src/routes/chat.js';
 
+// Travelport sandbox прототайп (тусгаарласан)
+import travelportRoutes from './src/routes/travelport.js';
+
 // ============================================================
 // Fastify instance
 // ============================================================
@@ -223,6 +226,9 @@ await fastify.register(adminReportRoutes,  { prefix: '/api/admin' });
 
 // Phase 6 route bundles
 await fastify.register(chatRoutes, { prefix: '/api' });
+
+// Travelport sandbox прототайп (тусгаарласан — амьд хайлт/захиалгад хүрэхгүй)
+await fastify.register(travelportRoutes, { prefix: '/api' });
 
 // ============================================================
 // Graceful shutdown
