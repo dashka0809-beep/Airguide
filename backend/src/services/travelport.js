@@ -129,6 +129,9 @@ export async function searchFlights({ from, to, departureDate }) {
       '@type': 'CatalogProductOfferingsQueryRequest',
       CatalogProductOfferingsRequest: {
         '@type': 'CatalogProductOfferingsRequestAir',
+        // Air Shopping Guide-аар: GDS контент + Journey representation +
+        // offersPerPage (caching) — зөвлөмжийн дагуу.
+        contentSourceList: ['GDS'],
         PassengerCriteria: [
           { '@type': 'PassengerCriteria', passengerTypeCode: 'ADT', number: 1 }
         ],
@@ -141,6 +144,11 @@ export async function searchFlights({ from, to, departureDate }) {
           CabinPreference: [
             { '@type': 'CabinPreference', preferenceType: 'Permitted', cabins: ['Economy'] }
           ]
+        },
+        CustomResponseModifiersAir: {
+          '@type': 'CustomResponseModifiersAir',
+          SearchRepresentation: 'Journey',
+          offersPerPage: 25
         }
       }
     }

@@ -70,6 +70,19 @@ Source: official Travelport support docs (fetched 2026-05-18).
 - Price: `offer.ProductBrandOptions[].ProductBrandOffering[].BestCombinablePrice.TotalPrice`
 - Currency: same `BestCombinablePrice.CurrencyCode.value`
 
+## Refinement (Air Shopping Guide, 2026-05-18)
+
+Per AirShoppingGuide.htm the request should also include:
+- `contentSourceList: ["GDS"]` (recommended)
+- `CustomResponseModifiersAir`: `SearchRepresentation: "Journey"`,
+  `offersPerPage: <positive int>` (enables caching)
+Response paths confirmed unchanged: offers under
+`CatalogProductOffering[]`, price in `ProductBrandOffering.BestCombinablePrice`
+(`TotalPrice`, `CurrencyCode.value`; note `Base` also present), flights
+via `flightRefs[]` → `ReferenceList[@type=ReferenceListFlight].Flight[]`.
+`ProductBrandOffering.Price` is removed — use `BestCombinablePrice` only
+(mapper already does).
+
 ## Fixture caveat
 
 Official doc pages omit the full `ReferenceList` ("edited out for
