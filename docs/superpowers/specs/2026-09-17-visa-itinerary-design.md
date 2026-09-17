@@ -1,8 +1,21 @@
 # Visa Itinerary Document ("Захиалгын хуудас") — Design Spec
 
 **Date:** 2026-09-17
-**Status:** Design approved. Implementation blocked on external access (see §9).
+**Status:** ⏸ ON HOLD — waiting for the Amadeus contract and its materials.
 **Approach:** B — fully automated, built once Amadeus Enterprise API and QPay access are available.
+
+> **Update 2026-09-17 (after approval):** Amadeus Mongolia indicated it will
+> provide **only a flight-search widget**, not Enterprise API access. If
+> confirmed, sub-project 1 (§4) cannot be built as written and Approach B via
+> Amadeus is infeasible. When the contract materials arrive, re-decide between:
+> 1. **Manual fulfilment** — site collects request + payment; staff create the
+>    PNR in the existing Amadeus terminal and upload the itinerary PDF.
+> 2. **Travelport automation** — requires a Travelport contract + PCC.
+> 3. **Amadeus widget** — only if it supports on-hold bookings; Airguide could
+>    not control the fee or the document layout.
+>
+> Note: the widget screenshot labels ULN as "Buyant-Ukhaa"; the current
+> Ulaanbaatar international airport is **UBN** (Chinggis Khaan).
 
 ---
 
